@@ -1,0 +1,38 @@
+
+> sakai-react@10.1.0 dev
+> next dev
+
+- ready started server on 0.0.0.0:3000, url: http://localhost:3000
+- [35mevent[39m compiled client and server successfully in 317 ms (20 modules)
+- [36mwait[39m compiling...
+- [35mevent[39m compiled client and server successfully in 191 ms (20 modules)
+Watchpack Error (watcher): Error: EACCES: permission denied, watch '/etc/credstore'
+Watchpack Error (watcher): Error: EACCES: permission denied, watch '/etc/credstore.encrypted'
+Watchpack Error (watcher): Error: EACCES: permission denied, watch '/home/ubuntu'
+Watchpack Error (watcher): Error: EACCES: permission denied, watch '/opt/containerd'
+Watchpack Error (watcher): Error: EACCES: permission denied, watch '/root/.launchpadlib'
+Watchpack Error (watcher): Error: EACCES: permission denied, watch '/root/.ssh'
+Watchpack Error (watcher): Error: EACCES: permission denied, watch '/run/containerd'
+Watchpack Error (watcher): Error: EACCES: permission denied, watch '/run/docker'
+Watchpack Error (watcher): Error: EACCES: permission denied, watch '/run/sudo'
+Watchpack Error (watcher): Error: EACCES: permission denied, watch '/tmp/systemd-private-8393954b4ef54800969994f58a388139-systemd-logind.service-GGS8bh'
+Watchpack Error (initial scan): Error: EACCES: permission denied, scandir '/etc/credstore'
+Watchpack Error (initial scan): Error: EACCES: permission denied, scandir '/etc/credstore.encrypted'
+Watchpack Error (initial scan): Error: EACCES: permission denied, scandir '/home/ubuntu'
+Watchpack Error (initial scan): Error: EACCES: permission denied, scandir '/opt/containerd'
+Watchpack Error (initial scan): Error: EACCES: permission denied, scandir '/root/.launchpadlib'
+Watchpack Error (initial scan): Error: EACCES: permission denied, scandir '/root/.ssh'
+Watchpack Error (initial scan): Error: EACCES: permission denied, scandir '/run/containerd'
+Watchpack Error (initial scan): Error: EACCES: permission denied, scandir '/run/docker'
+Watchpack Error (initial scan): Error: EACCES: permission denied, scandir '/run/sudo'
+Watchpack Error (initial scan): Error: EACCES: permission denied, scandir '/tmp/systemd-private-8393954b4ef54800969994f58a388139-systemd-logind.service-GGS8bh'
+(node:5419) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+- [36mwait[39m compiling /(main)/pages/tecnico/page (client and server)...
+- [35mevent[39m compiled client and server successfully in 3.5s (832 modules)
+- [33mwarn[39m
+metadata.metadataBase is not set for resolving social open graph or twitter images, fallbacks to "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+- [36mwait[39m compiling /(main)/pages/ocorrencia/page (client and server)...
+- [35mevent[39m compiled client and server successfully in 1665 ms (842 modules)
+- [36mwait[39m compiling /(main)/pages/ordemdeservico/page (client and server)...
+- [35mevent[39m compiled client and server successfully in 542 ms (850 modules)
