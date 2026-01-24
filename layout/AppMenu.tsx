@@ -15,7 +15,7 @@ const AppMenu = () => {
             label: 'Home',
             items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' }]
         },
-        {
+        /*{
             label: 'UI Components',
             items: [
                 { label: 'Form Layout', icon: 'pi pi-fw pi-id-card', to: '/uikit/formlayout' },
@@ -49,19 +49,23 @@ const AppMenu = () => {
                 { label: 'PrimeIcons', icon: 'pi pi-fw pi-prime', to: '/utilities/icons' },
                 { label: 'PrimeFlex', icon: 'pi pi-fw pi-desktop', url: 'https://primeflex.org/', target: '_blank' }
             ]
-        },
+        }*/
         {
             label: 'Pages',
             icon: 'pi pi-fw pi-briefcase',
             to: '/pages',
             items: [
-                {
+                /*{
                     label: 'Landing',
                     icon: 'pi pi-fw pi-globe',
                     to: '/landing'
-                },
+                },*/
                 {
-                    label: 'Auth',
+                    label: 'Login',
+                    icon: 'pi pi-fw pi-sign-in',
+                    to: '/auth/login'
+                },
+                /*    label: 'Auth',
                     icon: 'pi pi-fw pi-user',
                     items: [
                         {
@@ -80,8 +84,28 @@ const AppMenu = () => {
                             to: '/auth/access'
                         }
                     ]
+                },*/
+                {
+                    label: 'Ativos',
+                    icon: 'pi pi-fw pi-pencil',
+                    to: '/pages/ativo'
                 },
                 {
+                    label: 'Técnicos',
+                    icon: 'pi pi-fw pi-pencil',
+                    to: '/pages/tecnico'
+                },
+                {
+                    label: 'Ocorrências',
+                    icon: 'pi pi-fw pi-pencil',
+                    to: '/pages/ocorrencia'
+                },
+                {
+                    label: 'Ordens de Serviço',
+                    icon: 'pi pi-fw pi-pencil',
+                    to: '/pages/ordemservico'
+                },
+                /*{
                     label: 'Crud',
                     icon: 'pi pi-fw pi-pencil',
                     to: '/pages/crud'
@@ -100,10 +124,15 @@ const AppMenu = () => {
                     label: 'Empty',
                     icon: 'pi pi-fw pi-circle-off',
                     to: '/pages/empty'
+                }*/
+                {
+                    label: 'Logout',
+                    icon: 'pi pi-fw pi-sign-in',
+                    to: '/auth/logout'
                 }
             ]
-        },
-        {
+        }
+        /*{
             label: 'Hierarchy',
             items: [
                 {
@@ -168,7 +197,7 @@ const AppMenu = () => {
                     target: '_blank'
                 }
             ]
-        }
+        }*/
     ];
 
     return (
@@ -178,9 +207,7 @@ const AppMenu = () => {
                     return !item?.seperator ? <AppMenuitem item={item} root={true} index={i} key={item.label} /> : <li className="menu-separator"></li>;
                 })}
 
-                <Link href="https://blocks.primereact.org" target="_blank" style={{ cursor: 'pointer' }}>
-                    <img alt="Prime Blocks" className="w-full mt-3" src={`/layout/images/banner-primeblocks${layoutConfig.colorScheme === 'light' ? '' : '-dark'}.png`} />
-                </Link>
+ 
             </ul>
         </MenuProvider>
     );

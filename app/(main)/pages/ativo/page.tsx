@@ -21,7 +21,7 @@ import { Dropdown } from 'primereact/dropdown';
 
 /* @todo Used 'as any' for types here. Will fix in next version due to onSelectionChange event type issue. */
 
-const Crud = () => {
+const AtivoPage = () => {
     type AtivoForm = {
         id?: number;
         tipoAtivo: string;
@@ -557,4 +557,4 @@ const Crud = () => {
     );
 };
 
-export default Crud;
+export default AtivoPage;

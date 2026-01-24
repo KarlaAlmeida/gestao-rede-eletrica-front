@@ -1,16 +1,4 @@
-/*import axios from "axios";
 
-export const axiosInstance = axios.create({
-    baseURL: "http://localhost:8081"
-})
-
-export class AtivoService{
-
-    listarTodos(){
-        return axiosInstance.get("api/ativos")
-    }
-
-}*/
 import axios from "axios";
 import { Projeto } from "@/types";
 

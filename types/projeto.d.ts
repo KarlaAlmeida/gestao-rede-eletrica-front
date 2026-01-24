@@ -26,4 +26,30 @@ declare namespace Projeto {
         number: number;
     };
 
+    export type Tecnico = {
+        id: number;
+        nome: string;
+        cpf: string;
+        funcao: string;
+        email: string;
+        telefone: string;
+    };
+
+    export type Ocorrencia = {
+        id: number;
+        descricao: string;
+        data: string;
+        status: string;
+        ativo: Ativo;
+    };
+
+    export type OrdemDeServico = {
+        id: number;
+        descricao: string;
+        data: string;
+        status: string;
+        tecnico: Tecnico;
+        ocorrencia: Ocorrencia;
+    };
+
 }
