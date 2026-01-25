@@ -30,9 +30,13 @@ declare namespace Projeto {
         id: number;
         nome: string;
         cpf: string;
-        funcao: string;
         email: string;
         telefone: string;
+        ultimoSalario: number;
+        ativo: boolean;
+        especialidade: string;
+        disponivel: boolean;
+        endereco: Endereco;
     };
 
     export type Ocorrencia = {

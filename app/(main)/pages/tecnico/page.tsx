@@ -14,13 +14,32 @@ import { Projeto } from '@/types';
 import { TecnicoService } from '@/service/TecnicoService';
 
 const TecnicoPage = () => {
+    type TecnicoForm = {
+        id?: number;
+        nome: string;
+        cpf: string;
+        email: string;
+        telefone: string;
+        ultimoSalario: number;
+        ativo: boolean;
+        especialidade: string;
+        disponivel: boolean;
+        cep: string;
+        numero?: string;
+    };
+    
     const tecnicoVazio: Projeto.Tecnico = {
         id: 0,
         nome: '',
         cpf: '',
-        funcao: '',
         email: '',
-        telefone: ''
+        telefone: '',
+        especialidade: '',
+        ultimoSalario: 0,
+        ativo: true,
+        disponivel: true,
+        cep: '',
+        numero: ''
     };
 
     const [tecnicos, setTecnicos] = useState<Projeto.Tecnico[]>([]);
