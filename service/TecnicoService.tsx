@@ -1,5 +1,7 @@
+
 import axios from "axios";
 import { Projeto } from "@/types";
+
 
 const api = axios.create({
     baseURL: "http://localhost:8081/api"
@@ -17,13 +19,29 @@ export class TecnicoService {
         return api.get<Projeto.Tecnico>(`/tecnicos/${id}`);
     }
 
-    criar(tecnico: Projeto.Tecnico) {
-        return api.post<Projeto.Tecnico>('/tecnicos', tecnico);
+    criar(payload: Projeto.TecnicoPayload) {
+        return api.post<Projeto.Tecnico>('/tecnicos', payload);
     }
 
-    atualizar(id: number, tecnico: Projeto.Tecnico) {
-        return api.put<Projeto.Tecnico>(`/tecnicos/${id}`, tecnico);
+    atualizar(id: number, payload: Projeto.TecnicoPayload) {
+        return api.put<Projeto.Tecnico>(`/tecnicos/${id}`, payload);
     }
+
+    inativar(id: number) {
+        return api.patch<Projeto.Tecnico>(`/tecnicos/${id}/inativar`);
+    }
+
+    alterarStatus(id: number, ativo: boolean) {
+        return api.patch(`/tecnicos/${id}/status`, { ativo });
+    }
+
+    alterarDisponibilidade(id: number, disponivel: boolean) {
+        return api.patch<Projeto.Tecnico>(
+            `/tecnicos/${id}/disponibilidade`,
+            { disponivel }
+        );
+    }
+
 
     excluir(id: number) {
         return api.delete(`/tecnicos/${id}`);

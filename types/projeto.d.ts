@@ -26,6 +26,7 @@ declare namespace Projeto {
         number: number;
     };
 
+    
     export type Tecnico = {
         id: number;
         nome: string;
@@ -37,6 +38,20 @@ declare namespace Projeto {
         especialidade: string;
         disponivel: boolean;
         endereco: Endereco;
+    };
+
+    export type TecnicoPayload = {
+        nome: string;
+        cpf: string;
+        email: string;
+        telefone: string;
+        ultimoSalario: number;
+        ativo: boolean;
+        especialidade: string;
+        disponivel: boolean;
+        cep: string;
+        numero?: number;
+        complementoNumero?: string;
     };
 
     export type Ocorrencia = {

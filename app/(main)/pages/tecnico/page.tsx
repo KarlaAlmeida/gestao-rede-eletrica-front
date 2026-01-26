@@ -14,22 +14,8 @@ import { Projeto } from '@/types';
 import { TecnicoService } from '@/service/TecnicoService';
 
 const TecnicoPage = () => {
-    type TecnicoForm = {
-        id?: number;
-        nome: string;
-        cpf: string;
-        email: string;
-        telefone: string;
-        ultimoSalario: number;
-        ativo: boolean;
-        especialidade: string;
-        disponivel: boolean;
-        cep: string;
-        numero?: string;
-    };
-    
-    const tecnicoVazio: Projeto.Tecnico = {
-        id: 0,
+
+    const tecnicoVazio: Projeto.TecnicoPayload = {
         nome: '',
         cpf: '',
         email: '',
@@ -39,11 +25,14 @@ const TecnicoPage = () => {
         ativo: true,
         disponivel: true,
         cep: '',
-        numero: ''
+        numero: undefined,
+        complementoNumero: ''
     };
 
+
     const [tecnicos, setTecnicos] = useState<Projeto.Tecnico[]>([]);
-    const [tecnico, setTecnico] = useState<Projeto.Tecnico>(tecnicoVazio);
+    const [tecnicoId, setTecnicoId] = useState<number | null>(null);
+    const [tecnico, setTecnico] = useState<Projeto.TecnicoPayload>(tecnicoVazio);
     const [tecnicoDialog, setTecnicoDialog] = useState(false);
     const [deleteTecnicoDialog, setDeleteTecnicoDialog] = useState(false);
     const [deleteTecnicosDialog, setDeleteTecnicosDialog] = useState(false);
@@ -92,14 +81,17 @@ const TecnicoPage = () => {
         setDeleteTecnicosDialog(false);
     };
 
+
     const saveTecnico = async () => {
         setSubmitted(true);
 
-        if (!tecnico.nome || !tecnico.cpf || !tecnico.funcao || !tecnico.email || !tecnico.telefone) return;
+        if (!tecnico.nome || !tecnico.cpf.replace(/\D/g, '') || !tecnico.email || !tecnico.telefone.replace(/\D/g, '') || !tecnico.especialidade || !tecnico.cep.replace(/\D/g, '')) {
+            return;
+        }
 
         try {
-            if (tecnico.id) {
-                await tecnicoService.atualizar(tecnico.id, tecnico);
+            if (tecnicoId !== null) {
+                await tecnicoService.atualizar(tecnicoId, tecnico);
             } else {
                 await tecnicoService.criar(tecnico);
             }
@@ -111,9 +103,10 @@ const TecnicoPage = () => {
             });
 
             setTecnicoDialog(false);
+            setTecnicoId(null);
             carregarTecnicos();
-        } catch (err) {
-            console.error(err);
+
+        } catch {
             toast.current?.show({
                 severity: 'error',
                 summary: 'Erro',
@@ -122,21 +115,38 @@ const TecnicoPage = () => {
         }
     };
 
+
+
     const editTecnico = (row: Projeto.Tecnico) => {
-        setTecnico({ ...row });
+        setTecnicoId(row.id);
+        setTecnico({
+            nome: row.nome,
+            cpf: row.cpf,
+            email: row.email,
+            telefone: row.telefone,
+            especialidade: row.especialidade,
+            ultimoSalario: row.ultimoSalario,
+            ativo: row.ativo,
+            disponivel: row.disponivel,
+            cep: row.endereco?.cep ?? '',
+            numero: undefined,
+            complementoNumero: ''
+        });
         setTecnicoDialog(true);
     };
+
 
     const confirmDeleteTecnico = (row: Projeto.Tecnico) => {
         setTecnico(row);
         setDeleteTecnicoDialog(true);
     };
 
+
     const deleteTecnico = async () => {
-        if (!tecnico.id) return;
+        if (tecnicoId === null) return;
 
         try {
-            await tecnicoService.excluir(tecnico.id);
+            await tecnicoService.excluir(tecnicoId);
 
             toast.current?.show({
                 severity: 'success',
@@ -145,9 +155,9 @@ const TecnicoPage = () => {
             });
 
             setDeleteTecnicoDialog(false);
+            setTecnicoId(null);
             carregarTecnicos();
-        } catch (err) {
-            console.error(err);
+        } catch {
             toast.current?.show({
                 severity: 'error',
                 summary: 'Erro',
@@ -155,6 +165,57 @@ const TecnicoPage = () => {
             });
         }
     };
+
+
+    const inativarTecnico = async (id: number) => {
+        try {
+            await tecnicoService.inativar(id);
+
+            toast.current?.show({
+                severity: 'success',
+                summary: 'Sucesso',
+                detail: 'Técnico inativado'
+            });
+
+            carregarTecnicos();
+        } catch {
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Erro',
+                detail: 'Erro ao inativar técnico'
+            });
+        }
+    };
+
+    const toggleAtivoTecnico = async (tecnico: Projeto.Tecnico) => {
+        try {
+            if (tecnico.ativo) {
+                await tecnicoService.inativar(tecnico.id);
+                toast.current?.show({
+                    severity: 'success',
+                    summary: 'Sucesso',
+                    detail: 'Técnico inativado'
+                });
+            } else {
+                await tecnicoService.reativar(tecnico.id);
+                toast.current?.show({
+                    severity: 'success',
+                    summary: 'Sucesso',
+                    detail: 'Técnico reativado'
+                });
+            }
+
+            carregarTecnicos();
+        } catch (error) {
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Erro',
+                detail: 'Erro ao alterar status do técnico'
+            });
+        }
+    };
+
+
 
     const exportCSV = () => {
         dt.current?.exportCSV();
@@ -191,13 +252,14 @@ const TecnicoPage = () => {
 
     const onInputChange = (
         e: React.ChangeEvent<HTMLInputElement>,
-        field: keyof Projeto.Tecnico
+        field: keyof Projeto.TecnicoPayload
     ) => {
         setTecnico(prev => ({
             ...prev,
             [field]: e.target.value
         }));
     };
+
 
     const leftToolbarTemplate = () => (
         <React.Fragment>
@@ -217,10 +279,96 @@ const TecnicoPage = () => {
 
     const actionBodyTemplate = (rowData: Projeto.Tecnico) => (
         <>
-            <Button icon="pi pi-pencil" rounded severity="success" className="mr-2" onClick={() => editTecnico(rowData)} />
-            <Button icon="pi pi-trash" rounded severity="warning" onClick={() => confirmDeleteTecnico(rowData)} />
+            <Button
+                icon="pi pi-pencil"
+                rounded
+                severity="success"
+                className="mr-2"
+                tooltip="Editar"
+                onClick={() => editTecnico(rowData)}
+            />
+
+            <Button
+                icon={rowData.ativo ? 'pi pi-ban' : 'pi pi-check'}
+                rounded
+                severity={rowData.ativo ? 'secondary' : 'success'}
+                className="mr-2"
+                tooltip={rowData.ativo ? 'Inativar Técnico' : 'Reativar Técnico'}
+                onClick={async () => {
+                    try {
+                        await tecnicoService.alterarStatus(
+                            rowData.id,
+                            !rowData.ativo
+                        );
+
+                        toast.current?.show({
+                            severity: 'success',
+                            summary: 'Sucesso',
+                            detail: rowData.ativo
+                                ? 'Técnico inativado com sucesso'
+                                : 'Técnico reativado com sucesso'
+                        });
+
+                        carregarTecnicos();
+                    } catch (error) {
+                        console.error(error);
+                        toast.current?.show({
+                            severity: 'error',
+                            summary: 'Erro',
+                            detail: 'Erro ao alterar status do técnico'
+                        });
+                    }
+                }}
+            />
+
+            <Button
+                icon="pi pi-trash"
+                rounded
+                severity="danger"
+                tooltip="Excluir"
+                onClick={() => confirmDeleteTecnico(rowData)}
+            />
+
+            <Button
+                icon={rowData.disponivel ? 'pi pi-user-minus' : 'pi pi-user-plus'}
+                rounded
+                severity={rowData.disponivel ? 'warning' : 'info'}
+                className="mr-2"
+                tooltip={
+                    rowData.disponivel
+                        ? 'Marcar como indisponível'
+                        : 'Marcar como disponível'
+                }
+                onClick={async () => {
+                    try {
+                        await tecnicoService.alterarDisponibilidade(
+                            rowData.id,
+                            !rowData.disponivel
+                        );
+
+                        toast.current?.show({
+                            severity: 'success',
+                            summary: 'Sucesso',
+                            detail: rowData.disponivel
+                                ? 'Técnico marcado como indisponível'
+                                : 'Técnico marcado como disponível'
+                        });
+
+                        carregarTecnicos();
+                    } catch (error) {
+                        console.error(error);
+                        toast.current?.show({
+                            severity: 'error',
+                            summary: 'Erro',
+                            detail: 'Erro ao alterar disponibilidade'
+                        });
+                    }
+                }}
+            />
+
         </>
     );
+
 
     const header = (
         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
@@ -287,11 +435,15 @@ const TecnicoPage = () => {
                         <Column selectionMode="multiple" headerStyle={{ width: '4rem' }}></Column>
                         <Column field="id" header="Código" sortable headerStyle={{ minWidth: '15rem' }}></Column>
                         <Column field="nome" header="Nome" sortable headerStyle={{ minWidth: '15rem' }}></Column>
+                        <Column field="especialidade" header="Especialidade" sortable />
                         <Column field="cpf" header="CPF" sortable headerStyle={{ minWidth: '15rem' }}></Column>
-                        <Column field="funcao" header="Função" sortable headerStyle={{ minWidth: '10rem' }}></Column>
                         <Column field="email" header="Email" sortable headerStyle={{ minWidth: '10rem' }}></Column>
                         <Column field="telefone" header="Telefone" sortable headerStyle={{ minWidth: '10rem' }}></Column>
+                        <Column field="ativo" header="Ativo" body={(row) => row.ativo ? 'Sim' : 'Não'} />
+                        <Column field="disponivel" header="Disponível" body={(row) => row.disponivel ? 'Sim' : 'Não'} />
                         <Column body={actionBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
+
+
                     </DataTable>
 
                     <Dialog visible={tecnicoDialog} style={{ width: '450px' }} header="Detalhes do Técnico" modal className="p-fluid" footer={tecnicoDialogFooter} onHide={hideDialog}>
@@ -302,13 +454,13 @@ const TecnicoPage = () => {
                         </div>
                         <div className="field">
                             <label htmlFor="cpf">CPF</label>
-                            <InputText id="cpf" value={tecnico.cpf} onChange={(e) => onInputChange(e, 'cpf')} required className={classNames({ 'p-invalid': submitted && !tecnico.cpf })} />
-                            {submitted && !tecnico.cpf && <small className="p-invalid">CPF é obrigatório.</small>}
+                            <InputText id="cpf" value={tecnico.cpf.replace(/\D/g, '')} onChange={(e) => onInputChange(e, 'cpf')} required className={classNames({ 'p-invalid': submitted && !tecnico.cpf.replace(/\D/g, '') })} />
+                            {submitted && !tecnico.cpf.replace(/\D/g, '') && <small className="p-invalid">CPF é obrigatório.</small>}
                         </div>
                         <div className="field">
-                            <label htmlFor="funcao">Função</label>
-                            <InputText id="funcao" value={tecnico.funcao} onChange={(e) => onInputChange(e, 'funcao')} required className={classNames({ 'p-invalid': submitted && !tecnico.funcao })} />
-                            {submitted && !tecnico.funcao && <small className="p-invalid">Função é obrigatória.</small>}
+                            <label htmlFor="especialidade">Especialidade</label>
+                            <InputText id="especialidade" maxLength={30} value={tecnico.especialidade} onChange={(e) => onInputChange(e, 'especialidade')} required className={classNames({ 'p-invalid': submitted && !tecnico.especialidade })} />
+                            {submitted && !tecnico.especialidade && <small className="p-invalid">Função é obrigatória.</small>}
                         </div>
                         <div className="field">
                             <label htmlFor="email">Email</label>
@@ -317,9 +469,42 @@ const TecnicoPage = () => {
                         </div>
                         <div className="field">
                             <label htmlFor="telefone">Telefone</label>
-                            <InputText id="telefone" value={tecnico.telefone} onChange={(e) => onInputChange(e, 'telefone')} required className={classNames({ 'p-invalid': submitted && !tecnico.telefone })} />
-                            {submitted && !tecnico.telefone && <small className="p-invalid">Telefone is obrigatório.</small>}
+                            <InputText id="telefone" value={tecnico.telefone.replace(/\D/g, '')} onChange={(e) => onInputChange(e, 'telefone')} required className={classNames({ 'p-invalid': submitted && !tecnico.telefone.replace(/\D/g, '') })} />
+                            {submitted && !tecnico.telefone.replace(/\D/g, '') && <small className="p-invalid">Telefone is obrigatório.</small>}
                         </div>
+                        <div className="field">
+                            <label htmlFor="cep">CEP</label>
+                            <InputText
+                                id="cep"
+                                value={tecnico.cep.replace(/\D/g, '')}
+                                onChange={(e) => setTecnico(prev => ({ ...prev, cep: e.target.value }))}
+                                placeholder="00000-000"
+                                className={classNames({ 'p-invalid': submitted && !tecnico.cep.replace(/\D/g, '') })}
+                            />
+                            {submitted && !tecnico.cep.replace(/\D/g, '') && <small className="p-invalid">CEP obrigatório.</small>}
+                        </div>
+
+                        <div className="field">
+                            <label htmlFor="numero">Número</label>
+                            <InputText
+                                id="numero"
+                                value={tecnico.numero ?? ''}
+                                onChange={(e) => setTecnico(prev => ({ ...prev, numero: Number(e.target.value) }))}
+                                placeholder="Opcional"
+                            />
+                        </div>
+
+                        <div className="field">
+                            <label htmlFor="complementoNumero">Complemento</label>
+                            <InputText
+                                id="complementoNumero"
+                                value={tecnico.complementoNumero ?? ''}
+                                onChange={(e) =>
+                                    setTecnico(prev => ({ ...prev, complementoNumero: e.target.value }))
+                                }
+                            />
+                        </div>
+
                     </Dialog>
 
                     <Dialog visible={deleteTecnicoDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteTecnicoDialogFooter} onHide={hideDeleteTecnicoDialog}>
