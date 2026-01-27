@@ -5,7 +5,7 @@ const api = axios.create({
     baseURL: "http://localhost:8081/api"
 });
 
-export class OcorrenciaService {
+class OcorrenciaService {
 
     listar(page = 0, size = 10) {
         return api.get<Projeto.Page<Projeto.Ocorrencia>>(
@@ -13,19 +13,48 @@ export class OcorrenciaService {
         );
     }
 
-    buscarPorId(id: number) {
-        return api.get<Projeto.Ocorrencia>(`/ocorrencias/${id}`);
+    criar(payload: {
+        ativoId: number;
+        descricaoOcorrencia: string;
+        prioridadeOcorrencia: string;
+    }) {
+        return api.post<Projeto.Ocorrencia>(
+            `/ocorrencias`,
+            payload
+        );
     }
 
-    criar(ocorrencia: Projeto.Ocorrencia) {
-        return api.post<Projeto.Ocorrencia>('/ocorrencias', ocorrencia);
+    atualizar(
+        id: number,
+        payload: {
+            ativoId: number;
+            descricaoOcorrencia: string;
+            prioridadeOcorrencia: string;
+        }
+    ) {
+        return api.put<Projeto.Ocorrencia>(
+            `/ocorrencias/${id}`,
+            payload
+        );
     }
 
-    atualizar(id: number, ocorrencia: Projeto.Ocorrencia) {
-        return api.put<Projeto.Ocorrencia>(`/ocorrencias/${id}`, ocorrencia);
+    alterarStatus(id: number, statusOcorrencia: string) {
+        return api.patch<Projeto.Ocorrencia>(
+            `/ocorrencias/${id}/status`,
+            { statusOcorrencia }
+        );
+    }
+
+    alterarPrioridade(id: number, prioridadeOcorrencia: string) {
+        return api.patch<Projeto.Ocorrencia>(
+            `/ocorrencias/${id}/prioridade`,
+            { prioridadeOcorrencia }
+        );
     }
 
     excluir(id: number) {
         return api.delete(`/ocorrencias/${id}`);
     }
 }
+
+export default new OcorrenciaService();

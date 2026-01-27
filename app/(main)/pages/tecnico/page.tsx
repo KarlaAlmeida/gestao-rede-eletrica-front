@@ -261,7 +261,7 @@ const TecnicoPage = () => {
     };
 
 
-    const leftToolbarTemplate = () => (
+    /*const leftToolbarTemplate = () => (
         <React.Fragment>
             <div className="my-2">
                 <Button label="Novo" icon="pi pi-plus" severity="success" className=" mr-2" onClick={openNew} />
@@ -275,7 +275,7 @@ const TecnicoPage = () => {
             <FileUpload mode="basic" accept="image/*" maxFileSize={1000000} chooseLabel="Import" className="mr-2 inline-block" />
             <Button label="Export" icon="pi pi-upload" severity="help" onClick={exportCSV} />
         </React.Fragment>
-    );
+    );*/
 
     const actionBodyTemplate = (rowData: Projeto.Tecnico) => (
         <>
@@ -405,8 +405,14 @@ const TecnicoPage = () => {
         <div className="grid crud-demo">
             <div className="col-12">
                 <div className="card">
+
                     <Toast ref={toast} />
-                    <Toolbar className="mb-4" left={leftToolbarTemplate} right={rightToolbarTemplate}></Toolbar>
+                    <Toolbar
+                        className="mb-4"
+                        left={() => (
+                            <Button label="Novo Técnico" icon="pi pi-plus" onClick={openNew} />
+                        )}
+                    />
 
                     <DataTable
                         ref={dt}

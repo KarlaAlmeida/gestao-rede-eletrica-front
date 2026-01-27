@@ -271,7 +271,7 @@ const AtivoPage = () => {
         setProduct(_product);
     };*/
 
-    const leftToolbarTemplate = () => {
+    /*const leftToolbarTemplate = () => {
         return (
             <React.Fragment>
                 <div className="my-2">
@@ -289,7 +289,7 @@ const AtivoPage = () => {
                 <Button label="Export" icon="pi pi-upload" severity="help" onClick={exportCSV} />
             </React.Fragment>
         );
-    };
+    };*/
 
     const idBodyTemplate = (rowData: Projeto.Ativo) => {
         return (
@@ -324,14 +324,6 @@ const AtivoPage = () => {
         { label: 'EM_MANUTENCAO', value: 'EM_MANUTENCAO' }
     ];
 
-    const tipoAtivoOptions = [
-        { label: 'POSTE', value: 'POSTE' },
-        { label: 'TRANSFORMADOR', value: 'TRANSFORMADOR' },
-        { label: 'CHAVE_FUSIVEL', value: 'CHAVE_FUSIVEL' },
-        { label: 'PARA_RAIOS', value: 'PARA_RAIOS' },
-        { label: 'REGULADOR', value: 'REGULADOR' }
-    ];
-
     const dataInstalacaoAtivoBodyTemplate = (rowData: Projeto.Ativo) => {
         return (
             <>
@@ -341,6 +333,15 @@ const AtivoPage = () => {
         );
     };
 
+    const tipoAtivoOptions = [
+        { label: 'POSTE', value: 'POSTE' },
+        { label: 'TRANSFORMADOR', value: 'TRANSFORMADOR' },
+        { label: 'CHAVE_FUSIVEL', value: 'CHAVE_FUSIVEL' },
+        { label: 'PARA_RAIOS', value: 'PARA_RAIOS' },
+        { label: 'REGULADOR', value: 'REGULADOR' }
+    ];
+
+    
     const enderecoAtivoBodyTemplate = (rowData: Projeto.Ativo) => (
         <>
             <span className="p-column-title">Endereço</span>
@@ -398,8 +399,14 @@ const AtivoPage = () => {
         <div className="grid crud-demo">
             <div className="col-12">
                 <div className="card">
+
                     <Toast ref={toast} />
-                    <Toolbar className="mb-4" left={leftToolbarTemplate} right={rightToolbarTemplate}></Toolbar>
+                    <Toolbar
+                        className="mb-4"
+                        left={() => (
+                            <Button label="Novo Ativo" icon="pi pi-plus" onClick={openNew} />
+                        )}
+                    />
 
                     <DataTable
                         ref={dt}

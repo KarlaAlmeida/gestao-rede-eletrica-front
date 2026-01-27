@@ -87,22 +87,22 @@ const AppMenu = () => {
                 },*/
                 {
                     label: 'Ativos',
-                    icon: 'pi pi-fw pi-pencil',
+                    icon: 'pi pi-fw pi-box',
                     to: '/pages/ativo'
                 },
                 {
                     label: 'Técnicos',
-                    icon: 'pi pi-fw pi-pencil',
+                    icon: 'pi pi-fw pi-users',
                     to: '/pages/tecnico'
                 },
                 {
                     label: 'Ocorrências',
-                    icon: 'pi pi-fw pi-pencil',
+                    icon: 'pi pi-fw pi-exclamation-triangle',
                     to: '/pages/ocorrencia'
                 },
                 {
                     label: 'Ordens de Serviço',
-                    icon: 'pi pi-fw pi-pencil',
+                    icon: 'pi pi-fw pi-file',
                     to: '/pages/ordemservico'
                 },
                 /*{
@@ -127,7 +127,7 @@ const AppMenu = () => {
                 }*/
                 {
                     label: 'Logout',
-                    icon: 'pi pi-fw pi-sign-in',
+                    icon: 'pi pi-fw pi-sign-out',
                     to: '/auth/logout'
                 }
             ]

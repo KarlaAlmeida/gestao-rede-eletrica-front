@@ -26,7 +26,7 @@ declare namespace Projeto {
         number: number;
     };
 
-    
+
     export type Tecnico = {
         id: number;
         nome: string;
@@ -56,9 +56,10 @@ declare namespace Projeto {
 
     export type Ocorrencia = {
         id: number;
-        descricao: string;
-        data: string;
-        status: string;
+        descricaoOcorrencia: string;
+        dataRegistroOcorrencia: string;
+        prioridadeOcorrencia: 'BAIXA' | 'MEDIA' | 'ALTA' | 'CRITICA';
+        statusOcorrencia: 'REGISTRADA' | 'ENCAMINHADA' | 'CONCLUIDA';
         ativo: Ativo;
     };
 
