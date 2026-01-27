@@ -1,130 +1,112 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
-import { Button } from 'primereact/button';
-import { Column } from 'primereact/column';
+
+import React, { useEffect, useRef, useState } from 'react';
 import { DataTable } from 'primereact/datatable';
-import { Dialog } from 'primereact/dialog';
-import { FileUpload } from 'primereact/fileupload';
-import { InputText } from 'primereact/inputtext';
+import { Column } from 'primereact/column';
 import { Toast } from 'primereact/toast';
+import { Button } from 'primereact/button';
+import { Dialog } from 'primereact/dialog';
+import { InputText } from 'primereact/inputtext';
+import { Dropdown } from 'primereact/dropdown';
 import { Toolbar } from 'primereact/toolbar';
 import { classNames } from 'primereact/utils';
-import React, { useEffect, useRef, useState } from 'react';
-import { Projeto } from '@/types';
-import { OrdemdeServicoService } from '@/service/OrdemdeServicoService';
-import { TecnicoService } from '@/service/TecnicoService';
-import { OcorrenciaService } from '@/service/OcorrenciaService';
-import { Dropdown } from 'primereact/dropdown';
+import { Calendar } from 'primereact/calendar';
 
-const OrdemDeServicoPage = () => {
-    const ordemDeServicoVazia: Projeto.OrdemDeServico = {
-        id: 0,
-        descricao: '',
-        data: '',
-        status: '',
-        tecnico: {
-            id: 0,
-            nome: '',
-            cpf: '',
-            funcao: '',
-            email: '',
-            telefone: ''
-        },
-        ocorrencia: {
-            id: 0,
-            descricao: '',
-            data: '',
-            status: '',
-            ativo: {
-                id: 0,
-                tipoAtivo: '',
-                statusAtivo: '',
-                dataInstalacao: '',
-                endereco: {}
-            }
-        }
+import { Projeto } from '@/types';
+import ordemServicoService from '@/service/OrdemdeServicoService';
+
+const OrdemServicoPage = () => {
+
+    /* =======================
+       STATE
+    ======================= */
+    const ordemServicoVazia = {
+        ocorrenciaId: 0,
+        cpfTecnico: '',
+        descricaoServico: ''
     };
 
-    const [ordensDeServico, setOrdensDeServico] = useState<Projeto.OrdemDeServico[]>([]);
-    const [tecnicos, setTecnicos] = useState<Projeto.Tecnico[]>([]);
-    const [ocorrencias, setOcorrencias] = useState<Projeto.Ocorrencia[]>([]);
-    const [ordemDeServico, setOrdemDeServico] = useState<Projeto.OrdemDeServico>(ordemDeServicoVazia);
-    const [ordemDeServicoDialog, setOrdemDeServicoDialog] = useState(false);
-    const [deleteOrdemDeServicoDialog, setDeleteOrdemDeServicoDialog] = useState(false);
-    const [deleteOrdensDeServicoDialog, setDeleteOrdensDeServicoDialog] = useState(false);
-    const [selectedOrdensDeServico, setSelectedOrdensDeServico] = useState<Projeto.OrdemDeServico[]>([]);
+    const [ordensServico, setOrdensServico] = useState<Projeto.OrdemDeServico[]>([]);
+    const [ordemServicoDialog, setOrdemServicoDialog] = useState(false);
+    const [deleteDialog, setDeleteDialog] = useState(false);
+    const [ordemServico, setOrdemServico] = useState<any>(ordemServicoVazia);
+    const [ordemServicoId, setOrdemServicoId] = useState<number | null>(null);
     const [submitted, setSubmitted] = useState(false);
-    const [globalFilter, setGlobalFilter] = useState('');
-    const toast = useRef<Toast>(null);
-    const dt = useRef<DataTable<any>>(null);
-    const [totalRecords, setTotalRecords] = useState(0);
-    const [loading, setLoading] = useState(false);
+
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState(10);
+    const [totalRecords, setTotalRecords] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [globalFilter, setGlobalFilter] = useState('');
 
-    const ordemDeServicoService = new OrdemdeServicoService();
-    const tecnicoService = new TecnicoService();
-    const ocorrenciaService = new OcorrenciaService();
+    const toast = useRef<Toast>(null);
+    const dt = useRef<DataTable<any>>(null);
 
-    const carregarOrdensDeServico = () => {
+    /* =======================
+       OPTIONS
+    ======================= */
+
+    const statusOptions = [
+        { label: 'Aberta', value: 'ABERTA' },
+        { label: 'Em andamento', value: 'EM_ANDAMENTO' },
+        { label: 'Concluída', value: 'CONCLUIDA' },
+        { label: 'Cancelada', value: 'CANCELADA' }
+    ];
+
+    /* =======================
+       LOAD
+    ======================= */
+    const carregarOrdensServico = () => {
         setLoading(true);
-        ordemDeServicoService.listar(page, rows)
+        ordemServicoService.listar(page, rows)
             .then(res => {
-                setOrdensDeServico(res.data.content);
+                setOrdensServico(res.data.content);
                 setTotalRecords(res.data.totalElements);
             })
             .finally(() => setLoading(false));
     };
 
-    const carregarTecnicos = () => {
-        tecnicoService.listar(0, 1000) // Assuming there are less than 1000 tecnicos
-            .then(res => {
-                setTecnicos(res.data.content);
-            });
-    };
-
-    const carregarOcorrencias = () => {
-        ocorrenciaService.listar(0, 1000) // Assuming there are less than 1000 ocorrencias
-            .then(res => {
-                setOcorrencias(res.data.content);
-            });
-    };
-
     useEffect(() => {
-        carregarOrdensDeServico();
-        carregarTecnicos();
-        carregarOcorrencias();
+        carregarOrdensServico();
     }, [page, rows]);
 
+    /* =======================
+       CRUD ACTIONS
+    ======================= */
     const openNew = () => {
-        setOrdemDeServico(ordemDeServicoVazia);
+        setOrdemServico(ordemServicoVazia);
+        setOrdemServicoId(null);
         setSubmitted(false);
-        setOrdemDeServicoDialog(true);
+        setOrdemServicoDialog(true);
     };
 
     const hideDialog = () => {
+        setOrdemServicoDialog(false);
         setSubmitted(false);
-        setOrdemDeServicoDialog(false);
     };
 
-    const hideDeleteOrdemDeServicoDialog = () => {
-        setDeleteOrdemDeServicoDialog(false);
-    };
-
-    const hideDeleteOrdensDeServicoDialog = () => {
-        setDeleteOrdensDeServicoDialog(false);
-    };
-
-    const saveOrdemDeServico = async () => {
+    const saveOrdemServico = async () => {
         setSubmitted(true);
 
-        if (!ordemDeServico.descricao || !ordemDeServico.data || !ordemDeServico.status) return;
+        if (
+            !ordemServico.descricaoServico ||
+            !ordemServico.ocorrenciaId ||
+            !ordemServico.cpfTecnico
+        ) return;
+
+        const payload = {
+            ocorrenciaId: ordemServico.ocorrenciaId,
+            cpfTecnico: ordemServico.cpfTecnico,
+            descricaoServico: ordemServico.descricaoServico
+        };
+
+        console.log("Payload enviado:", payload); // DEBUG
 
         try {
-            if (ordemDeServico.id) {
-                await ordemDeServicoService.atualizar(ordemDeServico.id, ordemDeServico);
+            if (ordemServicoId) {
+                await ordemServicoService.atualizar(ordemServicoId, payload);
             } else {
-                await ordemDeServicoService.criar(ordemDeServico);
+                await ordemServicoService.criar(payload);
             }
 
             toast.current?.show({
@@ -133,159 +115,103 @@ const OrdemDeServicoPage = () => {
                 detail: 'Ordem de Serviço salva com sucesso'
             });
 
-            setOrdemDeServicoDialog(false);
-            carregarOrdensDeServico();
+            setOrdemServicoDialog(false);
+            carregarOrdensServico();
+
         } catch (err) {
             console.error(err);
             toast.current?.show({
                 severity: 'error',
                 summary: 'Erro',
-                detail: 'Erro ao salvar Ordem de Serviço'
+                detail: 'Erro ao salvar ordem de serviço'
             });
         }
     };
 
-    const editOrdemDeServico = (row: Projeto.OrdemDeServico) => {
-        setOrdemDeServico({ ...row });
-        setOrdemDeServicoDialog(true);
+
+    const editOrdemServico = (row: Projeto.OrdemDeServico) => {
+        setOrdemServicoId(row.id);
+        setOrdemServico({
+            ocorrenciaId: row.ocorrencia.id,
+            cpfTecnico: row.tecnico.cpf,
+            descricaoServico: row.descricaoServico
+        });
+        setOrdemServicoDialog(true);
     };
 
-    const confirmDeleteOrdemDeServico = (row: Projeto.OrdemDeServico) => {
-        setOrdemDeServico(row);
-        setDeleteOrdemDeServicoDialog(true);
+    const confirmDelete = (row: Projeto.OrdemDeServico) => {
+        setOrdemServicoId(row.id);
+        setDeleteDialog(true);
     };
 
-    const deleteOrdemDeServico = async () => {
-        if (!ordemDeServico.id) return;
+    const deleteOrdemServico = async () => {
+        if (!ordemServicoId) return;
 
         try {
-            await ordemDeServicoService.excluir(ordemDeServico.id);
-
+            await ordemServicoService.excluir(ordemServicoId);
             toast.current?.show({
                 severity: 'success',
-                summary: 'Removido',
-                detail: 'Ordem de Serviço excluída com sucesso'
+                summary: 'Excluída',
+                detail: 'Ordem de serviço removida'
             });
-
-            setDeleteOrdemDeServicoDialog(false);
-            carregarOrdensDeServico();
-        } catch (err) {
-            console.error(err);
+            setDeleteDialog(false);
+            carregarOrdensServico();
+        } catch {
             toast.current?.show({
                 severity: 'error',
                 summary: 'Erro',
-                detail: 'Erro ao excluir Ordem de Serviço'
+                detail: 'Erro ao excluir ordem de serviço'
             });
         }
     };
 
-    const exportCSV = () => {
-        dt.current?.exportCSV();
-    };
-
-    const confirmDeleteSelected = () => {
-        setDeleteOrdensDeServicoDialog(true);
-    };
-
-    const deleteSelectedOrdensDeServico = async () => {
-        try {
-            await Promise.all(
-                selectedOrdensDeServico.map(o => ordemDeServicoService.excluir(o.id))
-            );
-
-            toast.current?.show({
-                severity: 'success',
-                summary: 'Removidos',
-                detail: 'Ordens de Serviço excluídas com sucesso'
-            });
-
-            setDeleteOrdensDeServicoDialog(false);
-            setSelectedOrdensDeServico([]);
-            carregarOrdensDeServico();
-        } catch (err) {
-            console.error(err);
-            toast.current?.show({
-                severity: 'error',
-                summary: 'Erro',
-                detail: 'Erro ao excluir Ordens de Serviço'
-            });
-        }
-    };
-
-    const onInputChange = (
-        e: React.ChangeEvent<HTMLInputElement>,
-        field: keyof Projeto.OrdemDeServico
-    ) => {
-        setOrdemDeServico(prev => ({
-            ...prev,
-            [field]: e.target.value
-        }));
-    };
-
-    const leftToolbarTemplate = () => (
-        <React.Fragment>
-            <div className="my-2">
-                <Button label="Novo" icon="pi pi-plus" severity="success" className=" mr-2" onClick={openNew} />
-                <Button label="Excluir" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedOrdensDeServico || !selectedOrdensDeServico.length} />
-            </div>
-        </React.Fragment>
-    );
-
-    const rightToolbarTemplate = () => (
-        <React.Fragment>
-            <FileUpload mode="basic" accept="image/*" maxFileSize={1000000} chooseLabel="Import" className="mr-2 inline-block" />
-            <Button label="Export" icon="pi pi-upload" severity="help" onClick={exportCSV} />
-        </React.Fragment>
-    );
-
-    const actionBodyTemplate = (rowData: Projeto.OrdemDeServico) => (
-        <>
-            <Button icon="pi pi-pencil" rounded severity="success" className="mr-2" onClick={() => editOrdemDeServico(rowData)} />
-            <Button icon="pi pi-trash" rounded severity="warning" onClick={() => confirmDeleteOrdemDeServico(rowData)} />
-        </>
-    );
-
+    /* =======================
+       TEMPLATES
+    ======================= */
     const header = (
-        <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-            <h5 className="m-0">Gestão de Ordens de Serviço</h5>
-            <span className="block mt-2 md:mt-0 p-input-icon-left">
-                <i className="pi pi-search" />
-                <InputText type="search" onInput={(e) => setGlobalFilter(e.currentTarget.value)} placeholder="Search..." />
-            </span>
+        <div className="flex justify-content-between align-items-center">
+            <h5 className="m-0">Gestão de Ordem de Serviços</h5>
+            
         </div>
     );
 
-    const ordemDeServicoDialogFooter = (
+    const actionTemplate = (row: Projeto.OrdemDeServico) => (
         <>
-            <Button label="Cancelar" icon="pi pi-times" text onClick={hideDialog} />
-            <Button label="Salvar" icon="pi pi-check" text onClick={saveOrdemDeServico} />
+            <Button
+                icon="pi pi-pencil"
+                rounded
+                className="mr-2"
+                onClick={() => editOrdemServico(row)}
+            />
+            <Button
+                icon="pi pi-trash"
+                rounded
+                severity="danger"
+                onClick={() => confirmDelete(row)}
+            />
         </>
     );
 
-    const deleteOrdemDeServicoDialogFooter = (
-        <>
-            <Button label="Não" icon="pi pi-times" text onClick={hideDeleteOrdemDeServicoDialog} />
-            <Button label="Sim" icon="pi pi-check" text onClick={deleteOrdemDeServico} />
-        </>
-    );
-
-    const deleteOrdensDeServicoDialogFooter = (
-        <>
-            <Button label="Não" icon="pi pi-times" text onClick={hideDeleteOrdensDeServicoDialog} />
-            <Button label="Sim" icon="pi pi-check" text onClick={deleteSelectedOrdensDeServico} />
-        </>
-    );
-
+    /* =======================
+       RENDER
+    ======================= */
     return (
         <div className="grid crud-demo">
             <div className="col-12">
                 <div className="card">
+
                     <Toast ref={toast} />
-                    <Toolbar className="mb-4" left={leftToolbarTemplate} right={rightToolbarTemplate}></Toolbar>
+
+                    <Toolbar
+                        className="mb-4"
+                        left={() => (
+                            <Button label="Nova Ordem de Serviço" icon="pi pi-plus" onClick={openNew} />
+                        )}
+                    />
 
                     <DataTable
                         ref={dt}
-                        value={ordensDeServico}
+                        value={ordensServico}
                         lazy
                         paginator
                         first={page * rows}
@@ -297,73 +223,149 @@ const OrdemDeServicoPage = () => {
                             setRows(e.rows ?? 10);
                         }}
                         dataKey="id"
-                        responsiveLayout="scroll"
-                        selection={selectedOrdensDeServico}
-                        onSelectionChange={(e) => setSelectedOrdensDeServico(e.value)}
-                        className="datatable-responsive"
-                        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                        currentPageReportTemplate="Mostrando {first} até {last} de {totalRecords} Ordens de Serviço"
-                        globalFilter={globalFilter}
-                        emptyMessage="Nenhuma Ordem de Serviço encontrada."
                         header={header}
+                        globalFilter={globalFilter}
+                        emptyMessage="Nenhuma ordem de serviço encontrada"
                     >
-                        <Column selectionMode="multiple" headerStyle={{ width: '4rem' }}></Column>
-                        <Column field="id" header="Código" sortable headerStyle={{ minWidth: '15rem' }}></Column>
-                        <Column field="descricao" header="Descrição" sortable headerStyle={{ minWidth: '15rem' }}></Column>
-                        <Column field="data" header="Data" sortable headerStyle={{ minWidth: '15rem' }}></Column>
-                        <Column field="status" header="Status" sortable headerStyle={{ minWidth: '10rem' }}></Column>
-                        <Column body={actionBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
+
+                        <Column field="id" header="ID" sortable />
+                        <Column field="descricaoServico" header="Descrição" sortable />
+                        <Column field="ocorrencia.descricaoOcorrencia" header="Ocorrência" />
+                        <Column field="tecnico.nome" header="Técnico" />
+                        <Column field="dataCriacaoOS" header="Data de criação OS" />
+
+
+                        <Column
+                            header="Data Conclusão"
+                            body={(row: Projeto.OrdemDeServico) => (
+                                <Calendar
+                                    value={row.dataConclusaoOS ? new Date(row.dataConclusaoOS) : null}
+                                    dateFormat="dd/mm/yy"
+                                    showIcon
+                                    onChange={async (e) => {
+                                        if (!e.value) return;
+
+                                        const dataISO = e.value.toISOString().substring(0, 10);
+
+                                        try {
+                                            await ordemServicoService.alterarDataConclusao(
+                                                row.id,
+                                                dataISO
+                                            );
+
+                                            toast.current?.show({
+                                                severity: 'success',
+                                                summary: 'Sucesso',
+                                                detail: 'Data de conclusão atualizada'
+                                            });
+
+                                            carregarOrdensServico();
+                                        } catch (error: any) {
+                                            console.error(error.response?.data);
+
+                                            toast.current?.show({
+                                                severity: 'error',
+                                                summary: 'Erro',
+                                                detail:
+                                                    error.response?.data?.message ??
+                                                    'Erro ao atualizar data de conclusão'
+                                            });
+                                        }
+                                    }}
+                                />
+                            )}
+                        />
+
+                        <Column
+                            header="Status"
+                            body={(row) => (
+                                <Dropdown
+                                    value={row.statusOS}
+                                    options={statusOptions}
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    onChange={async (e) => {
+                                        await ordemServicoService.alterarStatus(row.id, e.value);
+                                        carregarOrdensServico();
+                                    }}
+                                />
+                            )}
+                        />
+
+                        <Column body={actionTemplate} />
+
                     </DataTable>
 
-                    <Dialog visible={ordemDeServicoDialog} style={{ width: '450px' }} header="Detalhes da Ordem de Serviço" modal className="p-fluid" footer={ordemDeServicoDialogFooter} onHide={hideDialog}>
+                    {/* DIALOG CRUD */}
+                    <Dialog
+                        visible={ordemServicoDialog}
+                        style={{ width: '450px' }}
+                        header="Ordem Serviço"
+                        modal
+                        footer={
+                            <>
+                                <Button label="Cancelar" text onClick={hideDialog} />
+                                <Button label="Salvar" text onClick={saveOrdemServico} />
+                            </>
+                        }
+                        onHide={hideDialog}
+                    >
                         <div className="field">
-                            <label htmlFor="descricao">Descrição</label>
-                            <InputText id="descricao" value={ordemDeServico.descricao} onChange={(e) => onInputChange(e, 'descricao')} required autoFocus className={classNames({ 'p-invalid': submitted && !ordemDeServico.descricao })} />
-                            {submitted && !ordemDeServico.descricao && <small className="p-invalid">Descrição is obrigatória.</small>}
+                            <label>ID da Ocorrência</label>
+                            <InputText
+                                value={ordemServico.ocorrenciaId}
+                                onChange={(e) =>
+                                    setOrdemServico({ ...ordemServico, ocorrenciaId: Number(e.target.value) })
+                                }
+                                className={classNames({ 'p-invalid': submitted && !ordemServico.ocorrenciaId })}
+                            />
                         </div>
+
                         <div className="field">
-                            <label htmlFor="data">Data</label>
-                            <InputText id="data" value={ordemDeServico.data} onChange={(e) => onInputChange(e, 'data')} required className={classNames({ 'p-invalid': submitted && !ordemDeServico.data })} />
-                            {submitted && !ordemDeServico.data && <small className="p-invalid">Data is obrigatória.</small>}
+                            <label>CPF do Técnico</label>
+                            <InputText
+                                value={ordemServico.cpfTecnico}
+                                onChange={(e) =>
+                                    setOrdemServico({ ...ordemServico, cpfTecnico: e.target.value })
+                                }
+                                className={classNames({ 'p-invalid': submitted && !ordemServico.cpfTecnico })}
+                            />
                         </div>
+
                         <div className="field">
-                            <label htmlFor="status">Status</label>
-                            <InputText id="status" value={ordemDeServico.status} onChange={(e) => onInputChange(e, 'status')} required className={classNames({ 'p-invalid': submitted && !ordemDeServico.status })} />
-                            {submitted && !ordemDeServico.status && <small className="p-invalid">Status is obrigatório.</small>}
+                            <label>Descrição</label>
+                            <InputText
+                                value={ordemServico.descricaoServico}
+                                onChange={(e) =>
+                                    setOrdemServico({ ...ordemServico, descricaoServico: e.target.value })
+                                }
+                                className={classNames({ 'p-invalid': submitted && !ordemServico.descricaoServico })}
+                            />
                         </div>
-                        <div className="field">
-                            <label htmlFor="tecnico">Técnico</label>
-                            <Dropdown id="tecnico" value={ordemDeServico.tecnico.id} options={tecnicos.map(t => ({ label: t.nome, value: t.id }))} onChange={(e) => setOrdemDeServico(prev => ({ ...prev, tecnico: { ...prev.tecnico, id: e.value } }))} placeholder="Selecione um Técnico" className={classNames({ 'p-invalid': submitted && !ordemDeServico.tecnico.id })} />
-                            {submitted && !ordemDeServico.tecnico.id && <small className="p-invalid">Técnico é obrigatório.</small>}
-                        </div>
-                        <div className="field">
-                            <label htmlFor="ocorrencia">Ocorrência</label>
-                            <Dropdown id="ocorrencia" value={ordemDeServico.ocorrencia.id} options={ocorrencias.map(o => ({ label: o.descricao, value: o.id }))} onChange={(e) => setOrdemDeServico(prev => ({ ...prev, ocorrencia: { ...prev.ocorrencia, id: e.value } }))} placeholder="Selecione uma Ocorrência" className={classNames({ 'p-invalid': submitted && !ordemDeServico.ocorrencia.id })} />
-                            {submitted && !ordemDeServico.ocorrencia.id && <small className="p-invalid">Ocorrência é obrigatória.</small>}
-                        </div>
+
                     </Dialog>
 
-                    <Dialog visible={deleteOrdemDeServicoDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteOrdemDeServicoDialogFooter} onHide={hideDeleteOrdemDeServicoDialog}>
-                        <div className="flex align-items-center justify-content-center">
-                            <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-                            {ordemDeServico && (
-                                <span>
-                                    Você tem certeza que deseja deletar <b>{ordemDeServico.descricao}</b>?
-                                </span>
-                            )}
-                        </div>
+                    {/* DELETE */}
+                    <Dialog
+                        visible={deleteDialog}
+                        style={{ width: '450px' }}
+                        header="Confirmar Exclusão"
+                        modal
+                        footer={
+                            <>
+                                <Button label="Não" text onClick={() => setDeleteDialog(false)} />
+                                <Button label="Sim" text onClick={deleteOrdemServico} />
+                            </>
+                        }
+                        onHide={() => setDeleteDialog(false)}
+                    >
+                        Tem certeza que deseja excluir esta ordem de serviço?
                     </Dialog>
 
-                    <Dialog visible={deleteOrdensDeServicoDialog} style={{ width: '450px' }} header="Confirmar" modal footer={deleteOrdensDeServicoDialogFooter} onHide={hideDeleteOrdensDeServicoDialog}>
-                        <div className="flex align-items-center justify-content-center">
-                            <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-                            {ordemDeServico && <span>Você tem certeza que deseja deletar as Ordens de Serviço selecionadas?</span>}
-                        </div>
-                    </Dialog>
                 </div>
             </div>
         </div>
     );
 };
 
-export default OrdemDeServicoPage;
+export default OrdemServicoPage;

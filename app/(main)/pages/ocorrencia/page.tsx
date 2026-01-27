@@ -175,10 +175,7 @@ const OcorrenciasPage = () => {
     const header = (
         <div className="flex justify-content-between align-items-center">
             <h5 className="m-0">Gestão de Ocorrências</h5>
-            <span className="p-input-icon-left">
-                <i className="pi pi-search" />
-                <InputText onInput={(e) => setGlobalFilter(e.currentTarget.value)} placeholder="Buscar..." />
-            </span>
+        
         </div>
     );
 

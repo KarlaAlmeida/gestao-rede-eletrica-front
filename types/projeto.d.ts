@@ -65,11 +65,13 @@ declare namespace Projeto {
 
     export type OrdemDeServico = {
         id: number;
-        descricao: string;
-        data: string;
-        status: string;
         tecnico: Tecnico;
         ocorrencia: Ocorrencia;
+        descricaoServico: string;
+        dataCriacaoOS: string;
+        dataConclusaoOS?: string;
+        statusOS: 'ABERTA' | 'EM_ANDAMENTO' | 'CONCLUIDA' | 'CANCELADA';
     };
+
 
 }

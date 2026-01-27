@@ -5,27 +5,56 @@ const api = axios.create({
     baseURL: "http://localhost:8081/api"
 });
 
-export class OrdemdeServicoService {
+class OrdemServicoService {
 
     listar(page = 0, size = 10) {
         return api.get<Projeto.Page<Projeto.OrdemDeServico>>(
-            `/ordens-servico?page=${page}&size=${size}`
+            `/ordem-servico?page=${page}&size=${size}`
         );
     }
 
-    buscarPorId(id: number) {
-        return api.get<Projeto.OrdemDeServico>(`/ordens-servico/${id}`);
+    criar(payload: {
+        ocorrenciaId: number;
+        cpfTecnico: string;
+        descricaoServico: string;
+    }) {
+        return api.post<Projeto.OrdemDeServico>(
+            `/ordem-servico`,
+            payload
+        );
     }
 
-    criar(ordem: Projeto.OrdemDeServico) {
-        return api.post<Projeto.OrdemDeServico>('/ordens-servico', ordem);
+    atualizar(
+        id: number,
+        payload: {
+            ocorrenciaId: number;
+            cpfTecnico: string;
+            descricaoServico: string;
+        }
+    ) {
+        return api.put<Projeto.OrdemDeServico>(
+            `/ordem-servico/${id}`,
+            payload
+        );
     }
 
-    atualizar(id: number, ordem: Projeto.OrdemDeServico) {
-        return api.put<Projeto.OrdemDeServico>(`/ordens-servico/${id}`, ordem);
+    alterarStatus(id: number, statusOS: string) {
+        return api.patch<Projeto.OrdemDeServico>(
+            `/ordem-servico/${id}/status`,
+            { statusOS }
+        );
+    }
+
+    alterarDataConclusao(id: number, dataConclusaoOS: string) {
+        return api.patch<Projeto.OrdemDeServico>(
+            `/ordem-servico/${id}/data-conclusao`,
+            { dataConclusaoOS }
+        );
     }
 
     excluir(id: number) {
-        return api.delete(`/ordens-servico/${id}`);
+        return api.delete(`/ordem-servico/${id}`);
     }
 }
+
+export default new OrdemServicoService();
