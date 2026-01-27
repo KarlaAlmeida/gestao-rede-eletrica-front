@@ -1,48 +1,31 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
-import { Button } from 'primereact/button';
 import { Chart } from 'primereact/chart';
-import { Column } from 'primereact/column';
-import { DataTable } from 'primereact/datatable';
-import { Menu } from 'primereact/menu';
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import { ProductService } from '../../demo/service/ProductService';
+import React, { useContext, useEffect, useState } from 'react';
 import { LayoutContext } from '../../layout/context/layoutcontext';
-import Link from 'next/link';
-import { Demo } from '@/types';
+import { Projeto } from '@/types';
 import { ChartData, ChartOptions } from 'chart.js';
-
-const lineData: ChartData = {
-    labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-    datasets: [
-        {
-            label: 'First Dataset',
-            data: [65, 59, 80, 81, 56, 55, 40],
-            fill: false,
-            backgroundColor: '#2f4860',
-            borderColor: '#2f4860',
-            tension: 0.4
-        },
-        {
-            label: 'Second Dataset',
-            data: [28, 48, 40, 19, 86, 27, 90],
-            fill: false,
-            backgroundColor: '#00bb7e',
-            borderColor: '#00bb7e',
-            tension: 0.4
-        }
-    ]
-};
+import { AtivoService } from '@/service/AtivoService';
+import { TecnicoService } from '@/service/TecnicoService';
+import OcorrenciaService from '@/service/OcorrenciaService';
+import OrdemDeServicoService from '@/service/OrdemdeServicoService';
 
 const Dashboard = () => {
-    const [products, setProducts] = useState<Demo.Product[]>([]);
-    const menu1 = useRef<Menu>(null);
-    const menu2 = useRef<Menu>(null);
-    const [lineOptions, setLineOptions] = useState<ChartOptions>({});
+    const [totalAtivos, setTotalAtivos] = useState(0);
+    const [totalTecnicos, setTotalTecnicos] = useState(0);
+    const [totalOcorrencias, setTotalOcorrencias] = useState(0);
+    const [ocorrenciasConcluidas, setOcorrenciasConcluidas] = useState(0);
+    const [totalOS, setTotalOS] = useState(0);
+    const [osConcluidas, setOsConcluidas] = useState(0);
+
+    const [ocorrenciasPorTipo, setOcorrenciasPorTipo] = useState<ChartData>({ labels: [], datasets: [] });
+    const [osPorTecnico, setOsPorTecnico] = useState<ChartData>({ labels: [], datasets: [] });
+
+    const [chartOptions, setChartOptions] = useState<ChartOptions>({});
     const { layoutConfig } = useContext(LayoutContext);
 
     const applyLightTheme = () => {
-        const lineOptions: ChartOptions = {
+        const options: ChartOptions = {
             plugins: {
                 legend: {
                     labels: {
@@ -70,11 +53,11 @@ const Dashboard = () => {
             }
         };
 
-        setLineOptions(lineOptions);
+        setChartOptions(options);
     };
 
     const applyDarkTheme = () => {
-        const lineOptions = {
+        const options: ChartOptions = {
             plugins: {
                 legend: {
                     labels: {
@@ -102,12 +85,8 @@ const Dashboard = () => {
             }
         };
 
-        setLineOptions(lineOptions);
+        setChartOptions(options);
     };
-
-    useEffect(() => {
-        ProductService.getProductsSmall().then((data) => setProducts(data));
-    }, []);
 
     useEffect(() => {
         if (layoutConfig.colorScheme === 'light') {
@@ -117,12 +96,78 @@ const Dashboard = () => {
         }
     }, [layoutConfig.colorScheme]);
 
-    const formatCurrency = (value: number) => {
-        return value?.toLocaleString('en-US', {
-            style: 'currency',
-            currency: 'USD'
-        });
-    };
+    useEffect(() => {
+        const ativoService = new AtivoService();
+        const tecnicoService = new TecnicoService();
+
+        const fetchData = async () => {
+            try {
+                const [ativosRes, tecnicosRes, ocorrenciasRes, osRes] = await Promise.all([
+                    ativoService.listar(0, 1000),
+                    tecnicoService.listar(0, 1000),
+                    OcorrenciaService.listar(0, 1000),
+                    OrdemDeServicoService.listar(0, 1000)
+                ]);
+
+                const ativos = ativosRes.data.content;
+                const tecnicos = tecnicosRes.data.content;
+                const ocorrencias = ocorrenciasRes.data.content;
+                const ordensServico = osRes.data.content;
+
+                setTotalAtivos(ativosRes.data.totalElements);
+                setTotalTecnicos(tecnicosRes.data.totalElements);
+                setTotalOcorrencias(ocorrenciasRes.data.totalElements);
+                setTotalOS(osRes.data.totalElements);
+
+                setOcorrenciasConcluidas(ocorrencias.filter((o) => o.statusOcorrencia === 'CONCLUIDA').length);
+                setOsConcluidas(ordensServico.filter((os) => os.statusOS === 'CONCLUIDA').length);
+
+                // Ocorrências por Tipo de Ativo
+                const ocorrenciasByTipo: { [key: string]: number } = {};
+                ocorrencias.forEach((o) => {
+                    const tipo = o.ativo?.tipoAtivo || 'Desconhecido';
+                    ocorrenciasByTipo[tipo] = (ocorrenciasByTipo[tipo] || 0) + 1;
+                });
+
+                setOcorrenciasPorTipo({
+                    labels: Object.keys(ocorrenciasByTipo),
+                    datasets: [
+                        {
+                            label: 'Ocorrências',
+                            data: Object.values(ocorrenciasByTipo),
+                            backgroundColor: '#2f4860',
+                            borderColor: '#2f4860',
+                            borderWidth: 1
+                        }
+                    ]
+                });
+
+                // OS por Técnico
+                const osByTecnico: { [key: string]: number } = {};
+                ordensServico.forEach((os) => {
+                    const tecnicoNome = os.tecnico?.nome || 'Não atribuído';
+                    osByTecnico[tecnicoNome] = (osByTecnico[tecnicoNome] || 0) + 1;
+                });
+
+                setOsPorTecnico({
+                    labels: Object.keys(osByTecnico),
+                    datasets: [
+                        {
+                            label: 'Ordens de Serviço',
+                            data: Object.values(osByTecnico),
+                            backgroundColor: '#00bb7e',
+                            borderColor: '#00bb7e',
+                            borderWidth: 1
+                        }
+                    ]
+                });
+            } catch (error) {
+                console.error('Erro ao carregar dados do dashboard:', error);
+            }
+        };
+
+        fetchData();
+    }, []);
 
     return (
         <div className="grid">
@@ -130,260 +175,70 @@ const Dashboard = () => {
                 <div className="card mb-0">
                     <div className="flex justify-content-between mb-3">
                         <div>
-                            <span className="block text-500 font-medium mb-3">Orders</span>
-                            <div className="text-900 font-medium text-xl">152</div>
+                            <span className="block text-500 font-medium mb-3">Total de Ativos</span>
+                            <div className="text-900 font-medium text-xl">{totalAtivos}</div>
                         </div>
                         <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
-                            <i className="pi pi-shopping-cart text-blue-500 text-xl" />
+                            <i className="pi pi-box text-blue-500 text-xl" />
                         </div>
                     </div>
-                    <span className="text-green-500 font-medium">24 new </span>
-                    <span className="text-500">since last visit</span>
                 </div>
             </div>
             <div className="col-12 lg:col-6 xl:col-3">
                 <div className="card mb-0">
                     <div className="flex justify-content-between mb-3">
                         <div>
-                            <span className="block text-500 font-medium mb-3">Revenue</span>
-                            <div className="text-900 font-medium text-xl">$2.100</div>
+                            <span className="block text-500 font-medium mb-3">Total de Técnicos</span>
+                            <div className="text-900 font-medium text-xl">{totalTecnicos}</div>
                         </div>
                         <div className="flex align-items-center justify-content-center bg-orange-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
-                            <i className="pi pi-map-marker text-orange-500 text-xl" />
+                            <i className="pi pi-users text-orange-500 text-xl" />
                         </div>
                     </div>
-                    <span className="text-green-500 font-medium">%52+ </span>
-                    <span className="text-500">since last week</span>
                 </div>
             </div>
             <div className="col-12 lg:col-6 xl:col-3">
                 <div className="card mb-0">
                     <div className="flex justify-content-between mb-3">
                         <div>
-                            <span className="block text-500 font-medium mb-3">Customers</span>
-                            <div className="text-900 font-medium text-xl">28441</div>
+                            <span className="block text-500 font-medium mb-3">Ocorrências</span>
+                            <div className="text-900 font-medium text-xl">{totalOcorrencias}</div>
                         </div>
                         <div className="flex align-items-center justify-content-center bg-cyan-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
-                            <i className="pi pi-inbox text-cyan-500 text-xl" />
+                            <i className="pi pi-exclamation-triangle text-cyan-500 text-xl" />
                         </div>
                     </div>
-                    <span className="text-green-500 font-medium">520 </span>
-                    <span className="text-500">newly registered</span>
+                    <span className="text-green-500 font-medium">{ocorrenciasConcluidas} </span>
+                    <span className="text-500">concluídas</span>
                 </div>
             </div>
             <div className="col-12 lg:col-6 xl:col-3">
                 <div className="card mb-0">
                     <div className="flex justify-content-between mb-3">
                         <div>
-                            <span className="block text-500 font-medium mb-3">Comments</span>
-                            <div className="text-900 font-medium text-xl">152 Unread</div>
+                            <span className="block text-500 font-medium mb-3">Ordens de Serviço</span>
+                            <div className="text-900 font-medium text-xl">{totalOS}</div>
                         </div>
                         <div className="flex align-items-center justify-content-center bg-purple-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
-                            <i className="pi pi-comment text-purple-500 text-xl" />
+                            <i className="pi pi-file text-purple-500 text-xl" />
                         </div>
                     </div>
-                    <span className="text-green-500 font-medium">85 </span>
-                    <span className="text-500">responded</span>
+                    <span className="text-green-500 font-medium">{osConcluidas} </span>
+                    <span className="text-500">concluídas</span>
                 </div>
             </div>
 
             <div className="col-12 xl:col-6">
                 <div className="card">
-                    <h5>Recent Sales</h5>
-                    <DataTable value={products} rows={5} paginator responsiveLayout="scroll">
-                        <Column header="Image" body={(data) => <img className="shadow-2" src={`/demo/images/product/${data.image}`} alt={data.image} width="50" />} />
-                        <Column field="name" header="Name" sortable style={{ width: '35%' }} />
-                        <Column field="price" header="Price" sortable style={{ width: '35%' }} body={(data) => formatCurrency(data.price)} />
-                        <Column
-                            header="View"
-                            style={{ width: '15%' }}
-                            body={() => (
-                                <>
-                                    <Button icon="pi pi-search" text />
-                                </>
-                            )}
-                        />
-                    </DataTable>
-                </div>
-                <div className="card">
-                    <div className="flex justify-content-between align-items-center mb-5">
-                        <h5>Best Selling Products</h5>
-                        <div>
-                            <Button type="button" icon="pi pi-ellipsis-v" rounded text className="p-button-plain" onClick={(event) => menu1.current?.toggle(event)} />
-                            <Menu
-                                ref={menu1}
-                                popup
-                                model={[
-                                    { label: 'Add New', icon: 'pi pi-fw pi-plus' },
-                                    { label: 'Remove', icon: 'pi pi-fw pi-minus' }
-                                ]}
-                            />
-                        </div>
-                    </div>
-                    <ul className="list-none p-0 m-0">
-                        <li className="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-                            <div>
-                                <span className="text-900 font-medium mr-2 mb-1 md:mb-0">Space T-Shirt</span>
-                                <div className="mt-1 text-600">Clothing</div>
-                            </div>
-                            <div className="mt-2 md:mt-0 flex align-items-center">
-                                <div className="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style={{ height: '8px' }}>
-                                    <div className="bg-orange-500 h-full" style={{ width: '50%' }} />
-                                </div>
-                                <span className="text-orange-500 ml-3 font-medium">%50</span>
-                            </div>
-                        </li>
-                        <li className="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-                            <div>
-                                <span className="text-900 font-medium mr-2 mb-1 md:mb-0">Portal Sticker</span>
-                                <div className="mt-1 text-600">Accessories</div>
-                            </div>
-                            <div className="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
-                                <div className="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style={{ height: '8px' }}>
-                                    <div className="bg-cyan-500 h-full" style={{ width: '16%' }} />
-                                </div>
-                                <span className="text-cyan-500 ml-3 font-medium">%16</span>
-                            </div>
-                        </li>
-                        <li className="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-                            <div>
-                                <span className="text-900 font-medium mr-2 mb-1 md:mb-0">Supernova Sticker</span>
-                                <div className="mt-1 text-600">Accessories</div>
-                            </div>
-                            <div className="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
-                                <div className="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style={{ height: '8px' }}>
-                                    <div className="bg-pink-500 h-full" style={{ width: '67%' }} />
-                                </div>
-                                <span className="text-pink-500 ml-3 font-medium">%67</span>
-                            </div>
-                        </li>
-                        <li className="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-                            <div>
-                                <span className="text-900 font-medium mr-2 mb-1 md:mb-0">Wonders Notebook</span>
-                                <div className="mt-1 text-600">Office</div>
-                            </div>
-                            <div className="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
-                                <div className="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style={{ height: '8px' }}>
-                                    <div className="bg-green-500 h-full" style={{ width: '35%' }} />
-                                </div>
-                                <span className="text-green-500 ml-3 font-medium">%35</span>
-                            </div>
-                        </li>
-                        <li className="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-                            <div>
-                                <span className="text-900 font-medium mr-2 mb-1 md:mb-0">Mat Black Case</span>
-                                <div className="mt-1 text-600">Accessories</div>
-                            </div>
-                            <div className="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
-                                <div className="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style={{ height: '8px' }}>
-                                    <div className="bg-purple-500 h-full" style={{ width: '75%' }} />
-                                </div>
-                                <span className="text-purple-500 ml-3 font-medium">%75</span>
-                            </div>
-                        </li>
-                        <li className="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-                            <div>
-                                <span className="text-900 font-medium mr-2 mb-1 md:mb-0">Robots T-Shirt</span>
-                                <div className="mt-1 text-600">Clothing</div>
-                            </div>
-                            <div className="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
-                                <div className="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style={{ height: '8px' }}>
-                                    <div className="bg-teal-500 h-full" style={{ width: '40%' }} />
-                                </div>
-                                <span className="text-teal-500 ml-3 font-medium">%40</span>
-                            </div>
-                        </li>
-                    </ul>
+                    <h5>Ocorrências por Tipo de Ativo</h5>
+                    <Chart type="bar" data={ocorrenciasPorTipo} options={chartOptions} />
                 </div>
             </div>
 
             <div className="col-12 xl:col-6">
                 <div className="card">
-                    <h5>Sales Overview</h5>
-                    <Chart type="line" data={lineData} options={lineOptions} />
-                </div>
-
-                <div className="card">
-                    <div className="flex align-items-center justify-content-between mb-4">
-                        <h5>Notifications</h5>
-                        <div>
-                            <Button type="button" icon="pi pi-ellipsis-v" rounded text className="p-button-plain" onClick={(event) => menu2.current?.toggle(event)} />
-                            <Menu
-                                ref={menu2}
-                                popup
-                                model={[
-                                    { label: 'Add New', icon: 'pi pi-fw pi-plus' },
-                                    { label: 'Remove', icon: 'pi pi-fw pi-minus' }
-                                ]}
-                            />
-                        </div>
-                    </div>
-
-                    <span className="block text-600 font-medium mb-3">TODAY</span>
-                    <ul className="p-0 mx-0 mt-0 mb-4 list-none">
-                        <li className="flex align-items-center py-2 border-bottom-1 surface-border">
-                            <div className="w-3rem h-3rem flex align-items-center justify-content-center bg-blue-100 border-circle mr-3 flex-shrink-0">
-                                <i className="pi pi-dollar text-xl text-blue-500" />
-                            </div>
-                            <span className="text-900 line-height-3">
-                                Richard Jones
-                                <span className="text-700">
-                                    {' '}
-                                    has purchased a blue t-shirt for <span className="text-blue-500">79$</span>
-                                </span>
-                            </span>
-                        </li>
-                        <li className="flex align-items-center py-2">
-                            <div className="w-3rem h-3rem flex align-items-center justify-content-center bg-orange-100 border-circle mr-3 flex-shrink-0">
-                                <i className="pi pi-download text-xl text-orange-500" />
-                            </div>
-                            <span className="text-700 line-height-3">
-                                Your request for withdrawal of <span className="text-blue-500 font-medium">2500$</span> has been initiated.
-                            </span>
-                        </li>
-                    </ul>
-
-                    <span className="block text-600 font-medium mb-3">YESTERDAY</span>
-                    <ul className="p-0 m-0 list-none">
-                        <li className="flex align-items-center py-2 border-bottom-1 surface-border">
-                            <div className="w-3rem h-3rem flex align-items-center justify-content-center bg-blue-100 border-circle mr-3 flex-shrink-0">
-                                <i className="pi pi-dollar text-xl text-blue-500" />
-                            </div>
-                            <span className="text-900 line-height-3">
-                                Keyser Wick
-                                <span className="text-700">
-                                    {' '}
-                                    has purchased a black jacket for <span className="text-blue-500">59$</span>
-                                </span>
-                            </span>
-                        </li>
-                        <li className="flex align-items-center py-2 border-bottom-1 surface-border">
-                            <div className="w-3rem h-3rem flex align-items-center justify-content-center bg-pink-100 border-circle mr-3 flex-shrink-0">
-                                <i className="pi pi-question text-xl text-pink-500" />
-                            </div>
-                            <span className="text-900 line-height-3">
-                                Jane Davis
-                                <span className="text-700"> has posted a new questions about your product.</span>
-                            </span>
-                        </li>
-                    </ul>
-                </div>
-                <div
-                    className="px-4 py-5 shadow-2 flex flex-column md:flex-row md:align-items-center justify-content-between mb-3"
-                    style={{
-                        borderRadius: '1rem',
-                        background: 'linear-gradient(0deg, rgba(0, 123, 255, 0.5), rgba(0, 123, 255, 0.5)), linear-gradient(92.54deg, #1C80CF 47.88%, #FFFFFF 100.01%)'
-                    }}
-                >
-                    <div>
-                        <div className="text-blue-100 font-medium text-xl mt-2 mb-3">TAKE THE NEXT STEP</div>
-                        <div className="text-white font-medium text-5xl">Try PrimeBlocks</div>
-                    </div>
-                    <div className="mt-4 mr-auto md:mt-0 md:mr-0">
-                        <Link href="https://blocks.primereact.org" className="p-button font-bold px-5 py-3 p-button-warning p-button-rounded p-button-raised">
-                            Get Started
-                        </Link>
-                    </div>
+                    <h5>Ordens de Serviço por Técnico</h5>
+                    <Chart type="bar" data={osPorTecnico} options={chartOptions} />
                 </div>
             </div>
         </div>
