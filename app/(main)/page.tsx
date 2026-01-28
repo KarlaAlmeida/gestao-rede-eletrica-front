@@ -3,7 +3,6 @@
 import { Chart } from 'primereact/chart';
 import React, { useContext, useEffect, useState } from 'react';
 import { LayoutContext } from '../../layout/context/layoutcontext';
-import { Projeto } from '@/types';
 import { ChartData, ChartOptions } from 'chart.js';
 import { AtivoService } from '@/service/AtivoService';
 import { TecnicoService } from '@/service/TecnicoService';
@@ -21,6 +20,7 @@ const Dashboard = () => {
     const [ocorrenciasPorTipo, setOcorrenciasPorTipo] = useState<ChartData>({ labels: [], datasets: [] });
     const [osPorTecnico, setOsPorTecnico] = useState<ChartData>({ labels: [], datasets: [] });
 
+    const [loading, setLoading] = useState(true);
     const [chartOptions, setChartOptions] = useState<ChartOptions>({});
     const { layoutConfig } = useContext(LayoutContext);
 
@@ -101,68 +101,75 @@ const Dashboard = () => {
         const tecnicoService = new TecnicoService();
 
         const fetchData = async () => {
+            setLoading(true);
             try {
-                const [ativosRes, tecnicosRes, ocorrenciasRes, osRes] = await Promise.all([
-                    ativoService.listar(0, 1000),
-                    tecnicoService.listar(0, 1000),
-                    OcorrenciaService.listar(0, 1000),
-                    OrdemDeServicoService.listar(0, 1000)
+                await Promise.allSettled([
+                    // Fetch Ativos
+                    ativoService.listar(0, 1000).then((res) => {
+                        setTotalAtivos(res.data.totalElements ?? res.data.content.length);
+                    }).catch(err => console.error("Erro ao carregar ativos", err)),
+
+                    // Fetch Tecnicos
+                    tecnicoService.listar(0, 1000).then((res) => {
+                        setTotalTecnicos(res.data.totalElements ?? res.data.content.length);
+                    }).catch(err => console.error("Erro ao carregar tecnicos", err)),
+
+                    // Fetch Ocorrencias
+                    OcorrenciaService.listar(0, 1000).then((res) => {
+                        const ocorrencias = res.data.content;
+                        setTotalOcorrencias(res.data.totalElements ?? ocorrencias.length);
+                        setOcorrenciasConcluidas(ocorrencias.filter((o) => o.statusOcorrencia === 'CONCLUIDA').length);
+
+                        const ocorrenciasByTipo: { [key: string]: number } = {};
+                        ocorrencias.forEach((o) => {
+                            const tipo = o.ativo?.tipoAtivo || 'Desconhecido';
+                            ocorrenciasByTipo[tipo] = (ocorrenciasByTipo[tipo] || 0) + 1;
+                        });
+
+                        setOcorrenciasPorTipo({
+                            labels: Object.keys(ocorrenciasByTipo),
+                            datasets: [
+                                {
+                                    label: 'Ocorrências',
+                                    data: Object.values(ocorrenciasByTipo),
+                                    backgroundColor: '#2f4860',
+                                    borderColor: '#2f4860',
+                                    borderWidth: 1
+                                }
+                            ]
+                        });
+                    }).catch(err => console.error("Erro ao carregar ocorrencias", err)),
+
+                    // Fetch OS
+                    OrdemDeServicoService.listar(0, 1000).then((res) => {
+                        const ordensServico = res.data.content;
+                        setTotalOS(res.data.totalElements ?? ordensServico.length);
+                        setOsConcluidas(ordensServico.filter((os) => os.statusOS === 'CONCLUIDA').length);
+
+                        const osByTecnico: { [key: string]: number } = {};
+                        ordensServico.forEach((os) => {
+                            const tecnicoNome = os.tecnico?.nome || 'Não atribuído';
+                            osByTecnico[tecnicoNome] = (osByTecnico[tecnicoNome] || 0) + 1;
+                        });
+
+                        setOsPorTecnico({
+                            labels: Object.keys(osByTecnico),
+                            datasets: [
+                                {
+                                    label: 'Ordens de Serviço',
+                                    data: Object.values(osByTecnico),
+                                    backgroundColor: '#00bb7e',
+                                    borderColor: '#00bb7e',
+                                    borderWidth: 1
+                                }
+                            ]
+                        });
+                    }).catch(err => console.error("Erro ao carregar ordens de serviço", err))
                 ]);
-
-                const ativos = ativosRes.data.content;
-                const tecnicos = tecnicosRes.data.content;
-                const ocorrencias = ocorrenciasRes.data.content;
-                const ordensServico = osRes.data.content;
-
-                setTotalAtivos(ativosRes.data.totalElements);
-                setTotalTecnicos(tecnicosRes.data.totalElements);
-                setTotalOcorrencias(ocorrenciasRes.data.totalElements);
-                setTotalOS(osRes.data.totalElements);
-
-                setOcorrenciasConcluidas(ocorrencias.filter((o) => o.statusOcorrencia === 'CONCLUIDA').length);
-                setOsConcluidas(ordensServico.filter((os) => os.statusOS === 'CONCLUIDA').length);
-
-                // Ocorrências por Tipo de Ativo
-                const ocorrenciasByTipo: { [key: string]: number } = {};
-                ocorrencias.forEach((o) => {
-                    const tipo = o.ativo?.tipoAtivo || 'Desconhecido';
-                    ocorrenciasByTipo[tipo] = (ocorrenciasByTipo[tipo] || 0) + 1;
-                });
-
-                setOcorrenciasPorTipo({
-                    labels: Object.keys(ocorrenciasByTipo),
-                    datasets: [
-                        {
-                            label: 'Ocorrências',
-                            data: Object.values(ocorrenciasByTipo),
-                            backgroundColor: '#2f4860',
-                            borderColor: '#2f4860',
-                            borderWidth: 1
-                        }
-                    ]
-                });
-
-                // OS por Técnico
-                const osByTecnico: { [key: string]: number } = {};
-                ordensServico.forEach((os) => {
-                    const tecnicoNome = os.tecnico?.nome || 'Não atribuído';
-                    osByTecnico[tecnicoNome] = (osByTecnico[tecnicoNome] || 0) + 1;
-                });
-
-                setOsPorTecnico({
-                    labels: Object.keys(osByTecnico),
-                    datasets: [
-                        {
-                            label: 'Ordens de Serviço',
-                            data: Object.values(osByTecnico),
-                            backgroundColor: '#00bb7e',
-                            borderColor: '#00bb7e',
-                            borderWidth: 1
-                        }
-                    ]
-                });
             } catch (error) {
                 console.error('Erro ao carregar dados do dashboard:', error);
+            } finally {
+                setLoading(false);
             }
         };
 
