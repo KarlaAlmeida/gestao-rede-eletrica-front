@@ -4,7 +4,6 @@ import { Button } from 'primereact/button';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
 import { Dialog } from 'primereact/dialog';
-import { FileUpload } from 'primereact/fileupload';
 import { InputText } from 'primereact/inputtext';
 import { Toast } from 'primereact/toast';
 import { Toolbar } from 'primereact/toolbar';
@@ -63,6 +62,7 @@ const TecnicoPage = () => {
     }, [page, rows]);
 
     const openNew = () => {
+        setTecnicoId(null);
         setTecnico(tecnicoVazio);
         setSubmitted(false);
         setTecnicoDialog(true);
@@ -137,9 +137,10 @@ const TecnicoPage = () => {
 
 
     const confirmDeleteTecnico = (row: Projeto.Tecnico) => {
-        setTecnico(row);
+        setTecnicoId(row.id);
         setDeleteTecnicoDialog(true);
     };
+
 
 
     const deleteTecnico = async () => {
@@ -216,15 +217,6 @@ const TecnicoPage = () => {
     };
 
 
-
-    const exportCSV = () => {
-        dt.current?.exportCSV();
-    };
-
-    const confirmDeleteSelected = () => {
-        setDeleteTecnicosDialog(true);
-    };
-
     const deleteSelectedTecnicos = async () => {
         try {
             await Promise.all(
@@ -259,23 +251,6 @@ const TecnicoPage = () => {
             [field]: e.target.value
         }));
     };
-
-
-    /*const leftToolbarTemplate = () => (
-        <React.Fragment>
-            <div className="my-2">
-                <Button label="Novo" icon="pi pi-plus" severity="success" className=" mr-2" onClick={openNew} />
-                <Button label="Excluir" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedTecnicos || !selectedTecnicos.length} />
-            </div>
-        </React.Fragment>
-    );
-
-    const rightToolbarTemplate = () => (
-        <React.Fragment>
-            <FileUpload mode="basic" accept="image/*" maxFileSize={1000000} chooseLabel="Import" className="mr-2 inline-block" />
-            <Button label="Export" icon="pi pi-upload" severity="help" onClick={exportCSV} />
-        </React.Fragment>
-    );*/
 
     const actionBodyTemplate = (rowData: Projeto.Tecnico) => (
         <>

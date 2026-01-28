@@ -17,9 +17,6 @@ import ordemServicoService from '@/service/OrdemdeServicoService';
 
 const OrdemServicoPage = () => {
 
-    /* =======================
-       STATE
-    ======================= */
     const ordemServicoVazia = {
         ocorrenciaId: 0,
         cpfTecnico: '',
@@ -42,10 +39,6 @@ const OrdemServicoPage = () => {
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
 
-    /* =======================
-       OPTIONS
-    ======================= */
-
     const statusOptions = [
         { label: 'Aberta', value: 'ABERTA' },
         { label: 'Em andamento', value: 'EM_ANDAMENTO' },
@@ -53,9 +46,7 @@ const OrdemServicoPage = () => {
         { label: 'Cancelada', value: 'CANCELADA' }
     ];
 
-    /* =======================
-       LOAD
-    ======================= */
+
     const carregarOrdensServico = () => {
         setLoading(true);
         ordemServicoService.listar(page, rows)
@@ -70,9 +61,6 @@ const OrdemServicoPage = () => {
         carregarOrdensServico();
     }, [page, rows]);
 
-    /* =======================
-       CRUD ACTIONS
-    ======================= */
     const openNew = () => {
         setOrdemServico(ordemServicoVazia);
         setOrdemServicoId(null);
@@ -165,9 +153,6 @@ const OrdemServicoPage = () => {
         }
     };
 
-    /* =======================
-       TEMPLATES
-    ======================= */
     const header = (
         <div className="flex justify-content-between align-items-center">
             <h5 className="m-0">Gestão de Ordem de Serviços</h5>
@@ -192,9 +177,6 @@ const OrdemServicoPage = () => {
         </>
     );
 
-    /* =======================
-       RENDER
-    ======================= */
     return (
         <div className="grid crud-demo">
             <div className="col-12">
