@@ -16,9 +16,6 @@ import ocorrenciaService from '@/service/OcorrenciaService';
 
 const OcorrenciasPage = () => {
 
-    /* =======================
-       STATE
-    ======================= */
     const ocorrenciaVazia = {
         ativoId: 0,
         descricaoOcorrencia: '',
@@ -41,9 +38,6 @@ const OcorrenciasPage = () => {
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
 
-    /* =======================
-       OPTIONS
-    ======================= */
     const prioridadeOptions = [
         { label: 'Baixa', value: 'BAIXA' },
         { label: 'Média', value: 'MEDIA' },
@@ -57,9 +51,6 @@ const OcorrenciasPage = () => {
         { label: 'Concluída', value: 'CONCLUIDA' }
     ];
 
-    /* =======================
-       LOAD
-    ======================= */
     const carregarOcorrencias = () => {
         setLoading(true);
         ocorrenciaService.listar(page, rows)
@@ -74,9 +65,7 @@ const OcorrenciasPage = () => {
         carregarOcorrencias();
     }, [page, rows]);
 
-    /* =======================
-       CRUD ACTIONS
-    ======================= */
+    
     const openNew = () => {
         setOcorrencia(ocorrenciaVazia);
         setOcorrenciaId(null);
@@ -169,9 +158,6 @@ const OcorrenciasPage = () => {
         }
     };
 
-    /* =======================
-       TEMPLATES
-    ======================= */
     const header = (
         <div className="flex justify-content-between align-items-center">
             <h5 className="m-0">Gestão de Ocorrências</h5>
@@ -196,9 +182,6 @@ const OcorrenciasPage = () => {
         </>
     );
 
-    /* =======================
-       RENDER
-    ======================= */
     return (
         <div className="grid crud-demo">
             <div className="col-12">

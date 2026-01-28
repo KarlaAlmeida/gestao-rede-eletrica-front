@@ -4,17 +4,11 @@ import { Button } from 'primereact/button';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
 import { Dialog } from 'primereact/dialog';
-import { FileUpload } from 'primereact/fileupload';
-import { InputNumber, InputNumberValueChangeEvent } from 'primereact/inputnumber';
 import { InputText } from 'primereact/inputtext';
-import { InputTextarea } from 'primereact/inputtextarea';
-import { RadioButton, RadioButtonChangeEvent } from 'primereact/radiobutton';
-import { Rating } from 'primereact/rating';
 import { Toast } from 'primereact/toast';
 import { Toolbar } from 'primereact/toolbar';
 import { classNames } from 'primereact/utils';
 import React, { useEffect, useRef, useState } from 'react';
-import { ProductService } from '../../../../demo/service/ProductService';
 import { Projeto } from '@/types';
 import { AtivoService } from '@/service/AtivoService';
 import { Dropdown } from 'primereact/dropdown';
@@ -81,14 +75,6 @@ const AtivoPage = () => {
         carregarAtivos();
     }, [page, rows]);
 
-    /*useEffect(() => {
-        ativoService.listar()
-            .then((response) => {
-                setAtivos(response.data.content);
-            })
-            .catch(console.error);
-    }, []);*/
-
     const openNew = () => {
         setAtivo(ativoVazio);
         setSubmitted(false);
@@ -145,8 +131,6 @@ const AtivoPage = () => {
         }
     };
 
-
-
     const editAtivo = (row: Projeto.Ativo) => {
         setAtivo({
             id: row.id,
@@ -190,37 +174,6 @@ const AtivoPage = () => {
         }
     };
 
-
-    /*const findIndexById = (id: string) => {
-        let index = -1;
-        for (let i = 0; i < (products as any)?.length; i++) {
-            if ((products as any)[i].id === id) {
-                index = i;
-                break;
-            }
-        }
-    
-        return index;
-    };*/
-
-    /*const createId = () => {
-        let id = '';
-        let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        for (let i = 0; i < 5; i++) {
-            id += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return id;
-    };*/
-
-    const exportCSV = () => {
-        dt.current?.exportCSV();
-    };
-
-    const confirmDeleteSelected = () => {
-        if (!ativosSelecionados.length) return;
-        setDeleteAtivosDialog(true);
-    };
-
     const deleteSelectedAtivos = async () => {
         try {
             await Promise.all(
@@ -246,12 +199,6 @@ const AtivoPage = () => {
         }
     };
 
-    /*const onCategoryChange = (e: RadioButtonChangeEvent) => {
-        let _product = { ...product };
-        _product['category'] = e.value;
-        setProduct(_product);
-    };*/
-
     const onInputChange = (
         e: React.ChangeEvent<HTMLInputElement>,
         field: keyof Projeto.Ativo
@@ -261,35 +208,6 @@ const AtivoPage = () => {
             [field]: e.target.value
         }));
     };
-
-
-    /*const onInputNumberChange = (e: InputNumberValueChangeEvent, name: string) => {
-        const val = e.value || 0;
-        let _product = { ...product };
-        _product[`${name}`] = val;
-    
-        setProduct(_product);
-    };*/
-
-    /*const leftToolbarTemplate = () => {
-        return (
-            <React.Fragment>
-                <div className="my-2">
-                    <Button label="Novo" icon="pi pi-plus" severity="success" className=" mr-2" onClick={openNew} />
-                    <Button label="Excluir" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedAtivos || !(selectedAtivos as any).length} />
-                </div>
-            </React.Fragment>
-        );
-    };
-
-    const rightToolbarTemplate = () => {
-        return (
-            <React.Fragment>
-                <FileUpload mode="basic" accept="image/*" maxFileSize={1000000} chooseLabel="Import" className="mr-2 inline-block" />
-                <Button label="Export" icon="pi pi-upload" severity="help" onClick={exportCSV} />
-            </React.Fragment>
-        );
-    };*/
 
     const idBodyTemplate = (rowData: Projeto.Ativo) => {
         return (
@@ -340,16 +258,6 @@ const AtivoPage = () => {
         { label: 'PARA_RAIOS', value: 'PARA_RAIOS' },
         { label: 'REGULADOR', value: 'REGULADOR' }
     ];
-
-
-    const enderecoAtivoBodyTemplate = (rowData: Projeto.Ativo) => (
-        <>
-            <span className="p-column-title">Endereço</span>
-            {rowData.endereco
-                ? `${rowData.endereco.logradouro}, ${rowData.endereco.numero} - ${rowData.endereco.bairro}`
-                : ''}
-        </>
-    );
 
     const enderecoBody = (row: Projeto.Ativo) =>
         row.endereco
