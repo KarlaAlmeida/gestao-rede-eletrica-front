@@ -60,7 +60,8 @@ const LoginPage = () => {
                             </div>
                             <Button label="Sign In" className="w-full p-3 text-xl" onClick={() => {
                                 login(email, password).catch(err => {
-                                    toast.current?.show({ severity: 'error', summary: 'Erro', detail: 'Falha ao realizar login. Verifique suas credenciais.', life: 3000 });
+                                    const detail = err.response ? 'Falha ao realizar login. Verifique suas credenciais.' : 'Erro de rede. Verifique se o servidor está rodando.';
+                                    toast.current?.show({ severity: 'error', summary: 'Erro', detail: detail, life: 3000 });
                                 });
                             }}></Button>
                         </div>
