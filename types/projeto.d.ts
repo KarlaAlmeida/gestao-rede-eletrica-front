@@ -18,6 +18,14 @@ declare namespace Projeto {
         endereco: Endereco;
     };
 
+    export type AtivoPayload = {
+        tipoAtivo: string;
+        statusAtivo?: string;
+        dataInstalacao: string;
+        cep: string;
+        numero?: string;
+    }
+
     export type Page<T> = {
         content: T[];
         totalElements: number;
@@ -73,6 +81,14 @@ declare namespace Projeto {
         statusOS: 'ABERTA' | 'EM_ANDAMENTO' | 'CONCLUIDA' | 'CANCELADA';
     };
 
+    export type Usuario = {
+        login: string;
+        senha?: string;
+        nome?: string;
+    }
 
+    export type AuthResponse = {
+        token: string;
+    }
 
 }

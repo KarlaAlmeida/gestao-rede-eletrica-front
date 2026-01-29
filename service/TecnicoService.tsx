@@ -1,11 +1,6 @@
 
-import axios from "axios";
 import { Projeto } from "@/types";
-
-
-const api = axios.create({
-    baseURL: "http://localhost:8081/api"
-});
+import api from "./BaseService";
 
 export class TecnicoService {
 
@@ -29,6 +24,10 @@ export class TecnicoService {
 
     inativar(id: number) {
         return api.patch<Projeto.Tecnico>(`/tecnicos/${id}/inativar`);
+    }
+
+    reativar(id: number) {
+        return api.patch<Projeto.Tecnico>(`/tecnicos/${id}/reativar`);
     }
 
     alterarStatus(id: number, ativo: boolean) {

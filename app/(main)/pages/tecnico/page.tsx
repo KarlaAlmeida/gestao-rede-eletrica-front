@@ -462,7 +462,7 @@ const TecnicoPage = () => {
                             <label htmlFor="numero">Número</label>
                             <InputText
                                 id="numero"
-                                value={tecnico.numero ?? ''}
+                                value={tecnico.numero?.toString() ?? ''}
                                 onChange={(e) => setTecnico(prev => ({ ...prev, numero: Number(e.target.value) }))}
                                 placeholder="Opcional"
                             />

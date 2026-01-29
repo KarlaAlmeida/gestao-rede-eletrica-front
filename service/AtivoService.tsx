@@ -1,10 +1,6 @@
 
-import axios from "axios";
 import { Projeto } from "@/types";
-
-const api = axios.create({
-    baseURL: "http://localhost:8081/api"
-});
+import api from "./BaseService";
 
 export class AtivoService {
 
@@ -18,11 +14,11 @@ export class AtivoService {
         return api.get<Projeto.Ativo>(`/ativos/${id}`);
     }
 
-    criar(ativo: Projeto.Ativo) {
+    criar(ativo: Projeto.AtivoPayload) {
         return api.post<Projeto.Ativo>('/ativos', ativo);
     }
 
-    atualizar(id: number, ativo: Projeto.Ativo) {
+    atualizar(id: number, ativo: Projeto.AtivoPayload) {
         return api.put<Projeto.Ativo>(`/ativos/${id}`, ativo);
     }
 
