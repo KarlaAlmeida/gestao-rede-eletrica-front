@@ -33,13 +33,13 @@ const AppMenu = () => {
                     label: 'Ativos',
                     icon: 'pi pi-fw pi-box',
                     to: '/pages/ativo',
-                    roles: ['ROLE_ADMIN']
+                    roles: ['ROLE_ADMIN', 'ROLE_USER']
                 },
                 {
                     label: 'Técnicos',
                     icon: 'pi pi-fw pi-users',
                     to: '/pages/tecnico',
-                    roles: ['ROLE_ADMIN']
+                    roles: ['ROLE_ADMIN', 'ROLE_USER']
                 },
                 {
                     label: 'Ocorrências',
