@@ -21,6 +21,11 @@ api.interceptors.response.use((response) => {
         localStorage.removeItem('token');
         window.location.href = '/auth/login';
     }
+
+    if (error.response && error.response.status === 403) {
+        window.location.href = '/auth/access';
+    }
+
     return Promise.reject(error);
 });
 

@@ -5,16 +5,22 @@ import AuthService from '@/service/AuthService';
 
 export const AuthContext = createContext({
     isAuthenticated: false,
+    roles: [] as string[],
+    loading: true,
     login: (login: string, senha: string) => Promise.resolve(),
     logout: () => {}
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [roles, setRoles] = useState<string[]>([]);
+    const [loading, setLoading] = useState(true);
     const router = useRouter();
 
     useEffect(() => {
         setIsAuthenticated(AuthService.isAuthenticated());
+        setRoles(AuthService.getUserRoles());
+        setLoading(false);
     }, []);
 
     const login = async (login: string, senha: string) => {
@@ -23,6 +29,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             const token = response.data.token;
             AuthService.setToken(token);
             setIsAuthenticated(true);
+            setRoles(AuthService.getUserRoles());
             router.push('/');
         } catch (error) {
             throw error;
@@ -32,11 +39,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const logout = () => {
         AuthService.logout();
         setIsAuthenticated(false);
+        setRoles([]);
+        setLoading(false);
         router.push('/auth/login');
     };
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+        <AuthContext.Provider value={{ isAuthenticated, roles, loading, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

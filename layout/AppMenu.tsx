@@ -6,9 +6,11 @@ import { LayoutContext } from './context/layoutcontext';
 import { MenuProvider } from './context/menucontext';
 import Link from 'next/link';
 import { AppMenuItem } from '@/types';
+import { AuthContext } from './context/authcontext';
 
 const AppMenu = () => {
     const { layoutConfig } = useContext(LayoutContext);
+    const { roles: userRoles } = useContext(AuthContext);
 
     const model: AppMenuItem[] = [
         {
@@ -30,12 +32,14 @@ const AppMenu = () => {
                 {
                     label: 'Ativos',
                     icon: 'pi pi-fw pi-box',
-                    to: '/pages/ativo'
+                    to: '/pages/ativo',
+                    roles: ['ROLE_ADMIN']
                 },
                 {
                     label: 'Técnicos',
                     icon: 'pi pi-fw pi-users',
-                    to: '/pages/tecnico'
+                    to: '/pages/tecnico',
+                    roles: ['ROLE_ADMIN']
                 },
                 {
                     label: 'Ocorrências',
@@ -58,14 +62,24 @@ const AppMenu = () => {
        
     ];
 
+    const isVisible = (item: AppMenuItem) => {
+        if (!item.roles) return true;
+        return item.roles.some((role) => userRoles.includes(role));
+    };
+
+    const filteredModel = model
+        .map((section) => ({
+            ...section,
+            items: section.items?.filter(isVisible)
+        }))
+        .filter((section) => section.items && section.items.length > 0);
+
     return (
         <MenuProvider>
             <ul className="layout-menu">
-                {model.map((item, i) => {
+                {filteredModel.map((item, i) => {
                     return !item?.seperator ? <AppMenuitem item={item} root={true} index={i} key={item.label} /> : <li className="menu-separator"></li>;
                 })}
-
- 
             </ul>
         </MenuProvider>
     );
