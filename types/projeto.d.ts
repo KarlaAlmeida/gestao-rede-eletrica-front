@@ -73,6 +73,15 @@ declare namespace Projeto {
         statusOS: 'ABERTA' | 'EM_ANDAMENTO' | 'CONCLUIDA' | 'CANCELADA';
     };
 
+    export type Usuario = {
+        login: string;
+        senha?: string;
+        nome?: string;
+    }
+
+    export type AuthResponse = {
+        token: string;
+    }
 
 
 }

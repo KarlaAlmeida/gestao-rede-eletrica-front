@@ -21,11 +21,11 @@ const AppMenu = () => {
             to: '/pages',
             items: [
             
-                {
+                /*{
                     label: 'Login',
                     icon: 'pi pi-fw pi-sign-in',
                     to: '/auth/login'
-                },
+                },*/
                 
                 {
                     label: 'Ativos',
@@ -48,11 +48,11 @@ const AppMenu = () => {
                     to: '/pages/ordemservico'
                 },
                 
-                {
+                /*{
                     label: 'Logout',
                     icon: 'pi pi-fw pi-sign-out',
                     to: '/auth/logout'
-                }
+                }*/
             ]
         }
        

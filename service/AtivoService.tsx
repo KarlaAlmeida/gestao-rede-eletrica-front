@@ -1,10 +1,6 @@
 
-import axios from "axios";
 import { Projeto } from "@/types";
-
-const api = axios.create({
-    baseURL: "http://localhost:8081/api"
-});
+import api from "./BaseService";
 
 export class AtivoService {
 
