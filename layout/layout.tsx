@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEventListener, useMountEffect, useUnmountEffect } from 'primereact/hooks';
 import React, { useContext, useEffect, useRef } from 'react';
 import { classNames } from 'primereact/utils';
+import { Toast } from 'primereact/toast';
 import AppFooter from './AppFooter';
 import AppSidebar from './AppSidebar';
 import AppTopbar from './AppTopbar';
@@ -19,6 +20,7 @@ const Layout = ({ children }: ChildContainerProps) => {
     const { setRipple } = useContext(PrimeReactContext);
     const topbarRef = useRef<AppTopbarRef>(null);
     const sidebarRef = useRef<HTMLDivElement>(null);
+    const toast = useRef<Toast>(null);
     const [bindMenuOutsideClickListener, unbindMenuOutsideClickListener] = useEventListener({
         type: 'click',
         listener: (event) => {
@@ -107,6 +109,17 @@ const Layout = ({ children }: ChildContainerProps) => {
         }
     }, [layoutState.profileSidebarVisible]);
 
+    useEffect(() => {
+        const handleApiError = (event: any) => {
+            toast.current?.show(event.detail);
+        };
+
+        window.addEventListener('api-error', handleApiError);
+        return () => {
+            window.removeEventListener('api-error', handleApiError);
+        };
+    }, []);
+
     useUnmountEffect(() => {
         unbindMenuOutsideClickListener();
         unbindProfileMenuOutsideClickListener();
@@ -125,6 +138,7 @@ const Layout = ({ children }: ChildContainerProps) => {
     return (
         <React.Fragment>
             <div className={containerClass}>
+                <Toast ref={toast} />
                 <AppTopbar ref={topbarRef} />
                 <div ref={sidebarRef} className="layout-sidebar">
                     <AppSidebar />

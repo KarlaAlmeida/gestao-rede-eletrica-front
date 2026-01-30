@@ -23,7 +23,15 @@ api.interceptors.response.use((response) => {
     }
 
     if (error.response && error.response.status === 403) {
-        window.location.href = '/auth/access';
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('api-error', {
+                detail: {
+                    severity: 'error',
+                    summary: 'Acesso Negado',
+                    detail: 'Você não tem permissão para realizar esta operação.'
+                }
+            }));
+        }
     }
 
     return Promise.reject(error);

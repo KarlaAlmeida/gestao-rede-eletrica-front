@@ -1,12 +1,14 @@
 'use client';
 import { useRouter, usePathname } from 'next/navigation';
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { AuthContext } from './authcontext';
+import AccessDeniedContent from '../components/AccessDeniedContent';
 
 export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
     const { isAuthenticated, roles, loading } = useContext(AuthContext);
     const router = useRouter();
     const pathname = usePathname();
+    const [isAuthorized, setIsAuthorized] = useState(true);
 
     useEffect(() => {
         if (loading) return;
@@ -26,11 +28,15 @@ export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
         if (isAuthenticated && protectedRoutes[pathname]) {
             const allowedRoles = protectedRoutes[pathname];
             const hasRole = allowedRoles.some((role) => roles.includes(role));
-            if (!hasRole) {
-                router.push('/auth/access');
-            }
+            setIsAuthorized(hasRole);
+        } else {
+            setIsAuthorized(true);
         }
     }, [isAuthenticated, pathname, router, roles, loading]);
+
+    if (!isAuthorized) {
+        return <AccessDeniedContent />;
+    }
 
     return <>{children}</>;
 };

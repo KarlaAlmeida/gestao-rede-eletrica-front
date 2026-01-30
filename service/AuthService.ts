@@ -39,8 +39,16 @@ export class AuthService {
         if (!decoded) return [];
 
         // Handling common JWT role claim names
-        const roles = decoded.roles || decoded.role || decoded.authorities || [];
-        return Array.isArray(roles) ? roles : [roles];
+        let roles = decoded.roles || decoded.role || decoded.authorities || [];
+        if (!Array.isArray(roles)) {
+            roles = [roles];
+        }
+
+        return roles.map((r: any) => {
+            if (typeof r === 'string') return r;
+            if (r && typeof r === 'object' && r.authority) return r.authority;
+            return String(r);
+        });
     }
 
     hasRole(role: string): boolean {
