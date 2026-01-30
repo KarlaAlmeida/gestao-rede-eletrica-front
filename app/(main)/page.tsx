@@ -1,118 +1,35 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
+import { Button } from 'primereact/button';
+import { Column } from 'primereact/column';
+import { DataTable } from 'primereact/datatable';
+import { Dialog } from 'primereact/dialog';
+import { InputText } from 'primereact/inputtext';
+import { Toast } from 'primereact/toast';
+import { Toolbar } from 'primereact/toolbar';
+import { classNames } from 'primereact/utils';
+import React, { useEffect, useRef, useState } from 'react';
+import { Projeto } from '@/types';
+import { AtivoService } from '@/service/AtivoService';
+import { Dropdown } from 'primereact/dropdown';
 
-import { useEffect, useState } from 'react';
-import DashboardService from '@/service/DashboardService';
-import { Card } from 'primereact/card';
-import { Chart } from 'primereact/chart';
+/* @todo Used 'as any' for types here. Will fix in next version due to onSelectionChange event type issue. */
 
-const DashboardPage = () => {
-
-    const [data, setData] = useState<any>(null);
-
-    useEffect(() => {
-        DashboardService.obterDashboard().then(res => setData(res.data));
-    }, []);
-
-
-    if (!data) return null;
-
-
-    const ocorrenciasChart = {
-        labels: Object.keys(data.ocorrenciasPorTipoAtivo),
-        datasets: [{
-            label: 'Ocorrências',
-            data: Object.values(data.ocorrenciasPorTipoAtivo)
-        }]
-    };
-
-
-    const ordensChart = {
-        labels: Object.keys(data.ordensServicoPorTecnico),
-        datasets: [{
-            label: 'Ordens de Serviço',
-            data: Object.values(data.ordensServicoPorTecnico)
-        }]
-    };
-
+const PaginaInicialPage = () => {
 
     return (
-        <div className="grid">
+        <div className="grid crud-demo">
+            <div className="col-12">
+                <div className="card">
+                    <span>
+                        Bem vindo(a) ao Sistema de Gestão de Ativos da Rede Elétrica
+                    </span>
 
-            <div className="col-12 lg:col-6 xl:col-3">
-                <div className="card mb-0">
-                    <div className="flex justify-content-between mb-3">
-                        <div>
-                            <span className="block text-500 font-medium mb-3">Ativos</span>
-                            <div className="text-900 font-medium text-xl">{data.totalAtivos}</div>
-                        </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
-                            <i className="pi pi-box text-blue-500 text-xl" />
-                        </div>
-                    </div>
                 </div>
             </div>
-
-           <div className="col-12 lg:col-6 xl:col-3">
-                <div className="card mb-0">
-                    <div className="flex justify-content-between mb-3">
-                        <div>
-                            <span className="block text-500 font-medium mb-3">Técnicos</span>
-                            <div className="text-900 font-medium text-xl">{data.totalTecnicos}</div>
-                        </div>
-                        <div className="flex align-items-center justify-content-center bg-orange-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
-                            <i className="pi pi-users text-orange-500 text-xl" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="col-12 lg:col-6 xl:col-3">
-                <div className="card mb-0">
-                    <div className="flex justify-content-between mb-3">
-                        <div>
-                            <span className="block text-500 font-medium mb-3">Ocorrências</span>
-                            <div className="text-900 font-medium text-xl">{data.totalOcorrencias}</div>
-                        </div>
-                        <div className="flex align-items-center justify-content-center bg-cyan-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
-                            <i className="pi pi-exclamation-triangle text-cyan-500 text-xl" />
-                        </div>
-                    </div>
-                    <span className="text-green-500 font-medium">{data.ocorrenciasConcluidas} </span>
-                    <span className="text-500">concluídas</span>
-                </div>
-            </div>
-
-            <div className="col-12 lg:col-6 xl:col-3">
-                <div className="card mb-0">
-                    <div className="flex justify-content-between mb-3">
-                        <div>
-                            <span className="block text-500 font-medium mb-3">Ordens de Serviço</span>
-                            <div className="text-900 font-medium text-xl">{data.totalOrdensServico}</div>
-                        </div>
-                        <div className="flex align-items-center justify-content-center bg-purple-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
-                            <i className="pi pi-file text-purple-500 text-xl" />
-                        </div>
-                    </div>
-                    <span className="text-green-500 font-medium">{data.ordensServicoConcluidas} </span>
-                    <span className="text-500">concluídas</span>
-                </div>
-            </div>
-
-            <div className="col-12 md:col-6">
-                <Card title="Ocorrências por Tipo de Ativo">
-                    <Chart type="bar" data={ocorrenciasChart} />
-                </Card>
-            </div>
-
-
-            <div className="col-12 md:col-6">
-                <Card title="Ordens de Serviço por Técnico">
-                    <Chart type="bar" data={ordensChart} />
-                </Card>
-            </div>
-
         </div>
     );
+
 };
 
-export default DashboardPage;
+export default PaginaInicialPage;
