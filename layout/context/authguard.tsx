@@ -19,8 +19,8 @@ export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
 
         // Example of role-based page protection
         const protectedRoutes: { [key: string]: string[] } = {
-            '/pages/ativo': ['ROLE_ADMIN'],
-            '/pages/tecnico': ['ROLE_ADMIN']
+            '/pages/ativo': ['ROLE_ADMIN', 'ROLE_USER'],
+            '/pages/tecnico': ['ROLE_ADMIN', 'ROLE_USER']
         };
 
         if (isAuthenticated && protectedRoutes[pathname]) {
